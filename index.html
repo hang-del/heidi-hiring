@@ -6,342 +6,90 @@
 <title>Heidi Hiring Review Tool</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #f5f5f7;
-    color: #1d1d1f;
-    min-height: 100vh;
-  }
-  .header {
-    background: white;
-    border-bottom: 1px solid #e5e5e7;
-    padding: 16px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f7; color: #1d1d1f; min-height: 100vh; }
+  .header { background: white; border-bottom: 1px solid #e5e5e7; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
   .header h1 { font-size: 18px; font-weight: 600; }
   .header .subtitle { font-size: 13px; color: #86868b; margin-top: 2px; }
-  .settings-btn {
-    background: none;
-    border: 1px solid #d2d2d7;
-    border-radius: 8px;
-    padding: 8px 14px;
-    font-size: 13px;
-    cursor: pointer;
-    color: #1d1d1f;
-    font-family: inherit;
-  }
+  .settings-btn { background: none; border: 1px solid #d2d2d7; border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer; color: #1d1d1f; font-family: inherit; }
   .settings-btn:hover { background: #f5f5f7; }
   .container { max-width: 860px; margin: 0 auto; padding: 32px 24px; }
-  .card {
-    background: white;
-    border-radius: 16px;
-    border: 1px solid #e5e5e7;
-    padding: 28px;
-    margin-bottom: 20px;
-  }
+  .card { background: white; border-radius: 16px; border: 1px solid #e5e5e7; padding: 28px; margin-bottom: 20px; }
   .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
-  .step-number {
-    width: 24px; height: 24px;
-    background: #0071e3;
-    color: white;
-    border-radius: 50%;
-    font-size: 12px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 8px;
-  }
+  .step-number { width: 24px; height: 24px; background: #0071e3; color: white; border-radius: 50%; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px; }
   label { display: block; font-size: 13px; font-weight: 500; color: #3a3a3c; margin-bottom: 6px; }
-  input[type="text"], input[type="password"], input[type="search"], textarea {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1px solid #d2d2d7;
-    border-radius: 10px;
-    font-size: 14px;
-    font-family: inherit;
-    color: #1d1d1f;
-    background: white;
-    outline: none;
-    transition: border-color 0.2s;
-  }
+  input[type="text"], input[type="password"], input[type="search"], textarea { width: 100%; padding: 10px 14px; border: 1px solid #d2d2d7; border-radius: 10px; font-size: 14px; font-family: inherit; color: #1d1d1f; background: white; outline: none; transition: border-color 0.2s; }
   input:focus, textarea:focus { border-color: #0071e3; box-shadow: 0 0 0 3px rgba(0,113,227,0.15); }
   textarea { resize: vertical; line-height: 1.5; }
-  .preset-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 10px;
-  }
-  .preset-card {
-    border: 2px solid #e5e5e7;
-    border-radius: 12px;
-    padding: 14px;
-    cursor: pointer;
-    transition: all 0.15s;
-    position: relative;
-  }
+  .preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .preset-card { border: 2px solid #e5e5e7; border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.15s; position: relative; }
   .preset-card:hover { border-color: #0071e3; background: #f0f7ff; }
   .preset-card.selected { border-color: #0071e3; background: #f0f7ff; }
   .preset-card .preset-name { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
   .preset-card .preset-desc { font-size: 11px; color: #86868b; line-height: 1.4; }
-  .selected-badge {
-    display: none;
-    position: absolute;
-    top: 8px; right: 8px;
-    width: 18px; height: 18px;
-    background: #0071e3;
-    border-radius: 50%;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 10px;
-  }
+  .selected-badge { display: none; position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; background: #0071e3; border-radius: 50%; align-items: center; justify-content: center; color: white; font-size: 10px; }
   .preset-card.selected .selected-badge { display: flex; }
   .jd-options { margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e5e7; }
-  .jd-option {
-    border: 2px solid #e5e5e7;
-    border-radius: 10px;
-    padding: 12px 14px;
-    cursor: pointer;
-    margin-bottom: 8px;
-    transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .jd-option { border: 2px solid #e5e5e7; border-radius: 10px; padding: 12px 14px; cursor: pointer; margin-bottom: 8px; transition: all 0.15s; display: flex; align-items: center; gap: 10px; }
   .jd-option:hover { border-color: #0071e3; background: #f0f7ff; }
   .jd-option.selected { border-color: #0071e3; background: #f0f7ff; }
   .jd-option .jd-name { font-size: 13px; font-weight: 600; }
   .jd-option .jd-desc { font-size: 12px; color: #86868b; margin-top: 2px; }
-  .radio-dot {
-    width: 16px; height: 16px;
-    border: 2px solid #d2d2d7;
-    border-radius: 50%;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  .radio-dot { width: 16px; height: 16px; border: 2px solid #d2d2d7; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
   .jd-option.selected .radio-dot { border-color: #0071e3; }
-  .jd-option.selected .radio-dot::after {
-    content: '';
-    width: 8px; height: 8px;
-    background: #0071e3;
-    border-radius: 50%;
-  }
-  .search-tabs {
-    display: flex;
-    gap: 4px;
-    background: #f5f5f7;
-    padding: 4px;
-    border-radius: 10px;
-    margin-bottom: 16px;
-  }
-  .search-tab {
-    flex: 1;
-    padding: 8px;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    background: none;
-    color: #86868b;
-    transition: all 0.15s;
-  }
+  .jd-option.selected .radio-dot::after { content: ''; width: 8px; height: 8px; background: #0071e3; border-radius: 50%; }
+  .search-tabs { display: flex; gap: 4px; background: #f5f5f7; padding: 4px; border-radius: 10px; margin-bottom: 16px; }
+  .search-tab { flex: 1; padding: 8px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; background: none; color: #86868b; transition: all 0.15s; }
   .search-tab.active { background: white; color: #1d1d1f; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
   .search-wrap { position: relative; }
   .search-row { display: flex; gap: 8px; }
   .search-row input { flex: 1; }
-  .btn-search {
-    background: #0071e3;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
+  .btn-search { background: #0071e3; color: white; border: none; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0; }
   .btn-search:hover { background: #0077ed; }
   .btn-search:disabled { background: #86868b; cursor: not-allowed; }
-  .search-results {
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0; right: 0;
-    background: white;
-    border: 1px solid #d2d2d7;
-    border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-    z-index: 40;
-    max-height: 320px;
-    overflow-y: auto;
-    display: none;
-  }
-  .search-result-item {
-    padding: 12px 16px;
-    cursor: pointer;
-    border-bottom: 1px solid #f5f5f7;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: background 0.1s;
-  }
+  .search-results { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: white; border: 1px solid #d2d2d7; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); z-index: 40; max-height: 320px; overflow-y: auto; display: none; }
+  .search-result-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f5f5f7; display: flex; align-items: center; gap: 12px; transition: background 0.1s; }
   .search-result-item:last-child { border-bottom: none; }
-  .search-result-item:hover, .search-result-item.highlighted { background: #f5f5f7; }
-  .avatar {
-    width: 36px; height: 36px;
-    background: #e8f4ff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 700;
-    color: #0071e3;
-    flex-shrink: 0;
-  }
+  .search-result-item:hover { background: #f5f5f7; }
+  .avatar { width: 36px; height: 36px; background: #e8f4ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #0071e3; flex-shrink: 0; }
   .result-info { flex: 1; min-width: 0; }
   .result-name { font-size: 14px; font-weight: 500; }
   .result-meta { font-size: 12px; color: #86868b; margin-top: 2px; }
-  .result-stage {
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 100px;
-    background: #f0f0f5;
-    color: #3a3a3c;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
+  .result-stage { font-size: 11px; padding: 3px 8px; border-radius: 100px; background: #f0f0f5; color: #3a3a3c; white-space: nowrap; flex-shrink: 0; }
   .search-msg { padding: 20px; text-align: center; color: #86868b; font-size: 13px; }
-  .mini-spinner {
-    width: 16px; height: 16px;
-    border: 2px solid #e5e5e7;
-    border-top-color: #0071e3;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    display: inline-block;
-    vertical-align: middle;
-    margin-right: 6px;
-  }
-  .selected-candidate-box {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px;
-    background: #f0f7ff;
-    border: 1px solid #b3d9ff;
-    border-radius: 12px;
-    margin-top: 12px;
-  }
+  .mini-spinner { width: 16px; height: 16px; border: 2px solid #e5e5e7; border-top-color: #0071e3; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 6px; }
+  .selected-candidate-box { display: flex; align-items: center; gap: 12px; padding: 14px; background: #f0f7ff; border: 1px solid #b3d9ff; border-radius: 12px; margin-top: 12px; }
   .selected-candidate-box .info { flex: 1; }
   .selected-candidate-box .cname { font-size: 14px; font-weight: 600; }
   .selected-candidate-box .cmeta { font-size: 12px; color: #0071e3; margin-top: 2px; }
   .clear-btn { background: none; border: none; cursor: pointer; color: #86868b; font-size: 20px; padding: 4px; line-height: 1; }
   .clear-btn:hover { color: #d70015; }
   .hint { font-size: 12px; color: #86868b; margin-top: 6px; line-height: 1.4; }
-  .btn-primary {
-    background: #0071e3;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 14px 24px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    width: 100%;
-    font-family: inherit;
-    transition: background 0.2s;
-  }
+  .btn-primary { background: #0071e3; color: white; border: none; border-radius: 10px; padding: 14px 24px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; font-family: inherit; transition: background 0.2s; }
   .btn-primary:hover { background: #0077ed; }
   .btn-primary:disabled { background: #86868b; cursor: not-allowed; }
-  .btn-secondary {
-    background: #f5f5f7;
-    color: #1d1d1f;
-    border: 1px solid #d2d2d7;
-    border-radius: 10px;
-    padding: 10px 18px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-  }
+  .btn-secondary { background: #f5f5f7; color: #1d1d1f; border: 1px solid #d2d2d7; border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; }
   .btn-secondary:hover { background: #e5e5e7; }
-  .btn-danger {
-    background: #fff0f0;
-    color: #d70015;
-    border: 1px solid #ffb3b8;
-    border-radius: 10px;
-    padding: 10px 18px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-  }
-  .alert {
-    padding: 12px 16px;
-    border-radius: 10px;
-    font-size: 13px;
-    margin-bottom: 16px;
-    line-height: 1.5;
-  }
+  .btn-danger { background: #fff0f0; color: #d70015; border: 1px solid #ffb3b8; border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
   .alert-error { background: #ffe0e3; color: #d70015; border: 1px solid #ffb3b8; }
   .alert-info { background: #e8f4ff; color: #0071e3; border: 1px solid #b3d9ff; }
   .alert-warning { background: #fff3d6; color: #946800; border: 1px solid #ffd580; }
   .loading-card { background: white; border-radius: 16px; border: 1px solid #e5e5e7; margin-top: 20px; }
   .loading-state { text-align: center; padding: 48px 24px; }
-  .spinner {
-    width: 40px; height: 40px;
-    border: 3px solid #e5e5e7;
-    border-top-color: #0071e3;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 16px;
-  }
+  .spinner { width: 40px; height: 40px; border: 3px solid #e5e5e7; border-top-color: #0071e3; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-state p { color: #86868b; font-size: 14px; }
   .loading-step { font-size: 13px; color: #0071e3; margin-top: 8px; }
   .result-card { background: white; border-radius: 16px; border: 1px solid #e5e5e7; overflow: hidden; margin-top: 20px; }
-  .result-header {
-    padding: 24px 28px;
-    border-bottom: 1px solid #e5e5e7;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-  }
+  .result-header { padding: 24px 28px; border-bottom: 1px solid #e5e5e7; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
   .result-header h3 { font-size: 20px; font-weight: 600; }
   .result-header .rmeta { font-size: 13px; color: #86868b; margin-top: 4px; }
-  .verdict {
-    padding: 10px 20px;
-    border-radius: 100px;
-    font-size: 14px;
-    font-weight: 700;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
+  .verdict { padding: 10px 20px; border-radius: 100px; font-size: 14px; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
   .verdict-hire { background: #d1f5e0; color: #1a7f37; }
   .verdict-no_hire { background: #ffe0e3; color: #d70015; }
   .verdict-maybe { background: #fff3d6; color: #946800; }
-  .score-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    border-bottom: 1px solid #e5e5e7;
-  }
-  .score-box {
-    padding: 20px;
-    text-align: center;
-    border-right: 1px solid #e5e5e7;
-  }
+  .score-row { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid #e5e5e7; }
+  .score-box { padding: 20px; text-align: center; border-right: 1px solid #e5e5e7; }
   .score-box:last-child { border-right: none; }
   .score-label { font-size: 11px; color: #86868b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 500; }
   .score-val { font-size: 28px; font-weight: 700; line-height: 1; }
@@ -358,36 +106,12 @@
   .denom { font-size: 20px; color: #86868b; }
   .signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .signal-list { list-style: none; }
-  .signal-list li {
-    font-size: 14px;
-    line-height: 1.5;
-    padding: 7px 0;
-    border-bottom: 1px solid #f5f5f7;
-    display: flex;
-    gap: 8px;
-  }
+  .signal-list li { font-size: 14px; line-height: 1.5; padding: 7px 0; border-bottom: 1px solid #f5f5f7; display: flex; gap: 8px; }
   .signal-list li:last-child { border-bottom: none; }
   .signal-heading { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
   .modal-overlay.open { display: flex; }
-  .modal {
-    background: white;
-    border-radius: 16px;
-    padding: 28px;
-    width: 100%;
-    max-width: 580px;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
+  .modal { background: white; border-radius: 16px; padding: 28px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; }
   .modal h2 { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
   .form-group { margin-bottom: 16px; }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5e5e7; }
@@ -430,14 +154,14 @@
     </div>
     <div id="panelSearch">
       <label>Search for a candidate in Ashby</label>
-      <div class="search-wrap">
+      <div class="search-wrap" id="searchWrap">
         <div class="search-row">
           <input type="search" id="searchInput" placeholder="Type a candidate name…" autocomplete="off" oninput="onSearchType()" onkeydown="onSearchKey(event)" />
           <button class="btn-search" id="searchBtn" onclick="doSearch()">Search</button>
         </div>
         <div class="search-results" id="searchResults"></div>
       </div>
-      <div class="hint">Searches all candidates in your Ashby account</div>
+      <div class="hint">Searches candidates in your Ashby account</div>
     </div>
     <div id="panelLink" style="display:none">
       <label>Paste the Ashby URL for this candidate</label>
@@ -449,7 +173,7 @@
 
   <div class="card">
     <h2><span class="step-number">3</span>Extra context <span style="font-weight:400;color:#86868b;font-size:13px">(optional)</span></h2>
-    <textarea id="extraContext" rows="3" placeholder="Anything extra to factor in — e.g. 'referred by the CTO', 'met them at a conference', 'they want to relocate'…"></textarea>
+    <textarea id="extraContext" rows="3" placeholder="Anything extra to factor in — e.g. 'referred by the CTO', 'met them at a conference'…"></textarea>
   </div>
 
   <div id="errorBox" style="display:none"></div>
@@ -508,26 +232,11 @@
   <div class="modal">
     <h2 id="presetModalTitle">Add team preset</h2>
     <div id="presetErr" style="display:none"></div>
-    <div class="form-group">
-      <label>Team name</label>
-      <input type="text" id="pName" placeholder="e.g. Orchestration" />
-    </div>
-    <div class="form-group">
-      <label>What this team does</label>
-      <textarea id="pDesc" rows="4" placeholder="Describe the team's mission…"></textarea>
-    </div>
-    <div class="form-group">
-      <label>Job description</label>
-      <textarea id="pJD" rows="6" placeholder="Paste the JD here…"></textarea>
-    </div>
-    <div class="form-group">
-      <label>Must-haves</label>
-      <textarea id="pMust" rows="3" placeholder="Hard requirements…"></textarea>
-    </div>
-    <div class="form-group">
-      <label>Red flags</label>
-      <textarea id="pFlags" rows="3" placeholder="Things that would make this a no-hire…"></textarea>
-    </div>
+    <div class="form-group"><label>Team name</label><input type="text" id="pName" placeholder="e.g. Orchestration" /></div>
+    <div class="form-group"><label>What this team does</label><textarea id="pDesc" rows="4" placeholder="Describe the team's mission…"></textarea></div>
+    <div class="form-group"><label>Job description</label><textarea id="pJD" rows="6" placeholder="Paste the JD here…"></textarea></div>
+    <div class="form-group"><label>Must-haves</label><textarea id="pMust" rows="3" placeholder="Hard requirements…"></textarea></div>
+    <div class="form-group"><label>Red flags</label><textarea id="pFlags" rows="3" placeholder="Things that would make this a no-hire…"></textarea></div>
     <div class="modal-actions">
       <button class="btn-danger" id="deletePBtn" style="display:none;margin-right:auto" onclick="deletePreset()">Delete</button>
       <button class="btn-secondary" onclick="closePresetModal()">Cancel</button>
@@ -541,37 +250,30 @@ const PROXY_URL = 'https://ashby-proxy-jb4mjfwcz-hang-dels-projects.vercel.app/a
 
 const APPLIED_AI_JD = `The Role
 
-Working closely with our Engineering Manager, you will be a Senior AI Engineer. You are a technical leader responsible for solving our most critical model-related challenges.
-
-Your mission is to drive significant breakthroughs in model capabilities, leading research and development in areas like advanced fine-tuning (RLFT), alignment, and reasoning.
+Working closely with our Engineering Manager, you will be a Senior AI Engineer responsible for solving our most critical model-related challenges.
 
 What you will do:
-- Lead major R&D projects focused on step-changes in model performance, from ideation through to productionisation
-- Tackle the most ambiguous and challenging technical problems related to model behaviour, alignment, and safety
+- Lead major R&D projects focused on step-changes in model performance
+- Tackle the most ambiguous technical problems related to model behaviour, alignment, and safety
 - Build cutting-edge fine-tuned LLMs using the latest tools and frameworks
-- Partner with product, medical knowledge and design teams to automate prompt engineering, build agentic AI, and create model evaluation frameworks
-- Develop novel fine-tuning or data generation techniques tailored to our unique healthcare domain
+- Partner with product and medical knowledge teams to build agentic AI and evaluation frameworks
+- Develop novel fine-tuning or data generation techniques for our healthcare domain
 - Mentor mid-level and junior engineers
 
 What we look for:
-- Proven track record leading research or development projects resulting in significant improvements to large-scale AI models
-- Hands-on experience building scalable AI products or features
-- Shipped AI and LLM-powered features to real users in production
+- Proven track record leading projects resulting in significant improvements to large-scale AI models
+- Hands-on experience building scalable AI products shipped to real users in production
 - Expert in Python, deep learning frameworks (PyTorch/TensorFlow), and transformer architecture theory
 - Deep foundations in mathematics and statistics
-- Ability to translate vague product needs into concrete research questions and experiments
 - PhD in Computer Science, AI, Statistics, or related field highly preferred
 
-Bonus: Strong publication record in top-tier AI conferences. Experience building research teams. Expertise in reinforcement learning or data-centric AI.`;
+Bonus: Strong publication record. Experience building research teams. Expertise in reinforcement learning or data-centric AI.`;
 
 const DEFAULT_PRESETS = [
   {
-    id: 'orchestration',
-    name: 'Orchestration',
+    id: 'orchestration', name: 'Orchestration',
     desc: 'Connective tissue between all Heidi capabilities — context retrieval, intent routing, memory, tool orchestration',
-    teamDesc: `The Orchestration team builds the connective tissue that lets all of Heidi's capabilities work together as one consistent experience. Instead of each product area (Scribe, Calls, Tasks, Context) behaving like separate apps, Orchestration owns the layer that makes them coordinate.
-
-They own: context retrieval, intent routing, memory, and tool orchestration. This allows Heidi to move from "Generate a note" to "Complete the work around care" — multi-step admin workflows that touch different parts of the product and sometimes external systems.`,
+    teamDesc: `The Orchestration team builds the connective tissue that lets all of Heidi's capabilities work together as one consistent experience. They own: context retrieval, intent routing, memory, and tool orchestration. This allows Heidi to move from "Generate a note" to "Complete the work around care" — multi-step admin workflows that touch different parts of the product and sometimes external systems.`,
     jd: `You will operate as a Staff+ AI scientist/engineer on the Orchestration team. You will own the design and delivery of a clinician-grade retrieval and question-answering stack across data ingestion, indexing, ranking, grounding, and safe deployment.
 
 What you will do:
@@ -601,8 +303,7 @@ Bonus: Search relevance expertise for long-form citation-heavy domains. Knowledg
     redFlags: 'Only academic background with nothing shipped to production. No experience with retrieval or search systems. Weak on evaluation. No safety awareness. Purely infrastructure focused with no product sense.',
   },
   {
-    id: 'evidence',
-    name: 'Evidence',
+    id: 'evidence', name: 'Evidence',
     desc: 'Clinical evidence product — citation-backed answers from trusted medical sources',
     teamDesc: `The Evidence team builds Heidi Evidence: a clinical evidence product that helps clinicians ask questions and get citation-backed answers grounded in trusted sources, with transparent source attribution.`,
     jd: 'Senior Software Engineer focused on retrieval systems, RAG pipelines, and clinical AI products. You will build and improve the systems that retrieve, rank, and present clinical evidence to clinicians. Experience with search, embeddings, RAG, or information retrieval strongly preferred. Safety and quality mindset is essential.',
@@ -610,8 +311,7 @@ Bonus: Search relevance expertise for long-form citation-heavy domains. Knowledg
     redFlags: 'No experience with retrieval or search. Dismissive of safety concerns. No product sense. Never shipped to real end users.',
   },
   {
-    id: 'comms',
-    name: 'Comms',
+    id: 'comms', name: 'Comms',
     desc: 'AI voice agent and receptionist for patient communications — phone, SMS, scheduling',
     teamDesc: `Heidi Comms is focused on patient communications workflows for clinics — an AI voice agent and receptionist that handles inbound and outbound communications, scheduling, follow-ups, and integrations with practice systems.`,
     jd: 'Senior Software Engineer to build AI-powered voice and communications infrastructure. You will work on real-time voice AI, telephony systems, and integrations connecting Comms to clinic systems. Experience with real-time systems, VoIP/telephony, or conversational AI preferred.',
@@ -619,8 +319,7 @@ Bonus: Search relevance expertise for long-form citation-heavy domains. Knowledg
     redFlags: 'No real-time systems experience. Poor understanding of reliability requirements. No empathy for end users. Only internal tooling experience.',
   },
   {
-    id: 'models',
-    name: 'Models',
+    id: 'models', name: 'Models',
     desc: 'AI model platform — fine-tuning, alignment, evaluation, and model R&D',
     teamDesc: `The Models team researches, evaluates, and deploys the AI models that power Heidi's product. They own model infrastructure, experimentation (offline evaluations, shadow traffic, canary testing), and model R&D (fine-tuning, alignment, reasoning improvements).`,
     jd: `You will be a Senior AI Model Engineer on the Model Platform team.
@@ -646,6 +345,7 @@ Bonus: Strong publication record. Experience leading research teams. Expertise i
   },
 ];
 
+// ── STATE ──────────────────────────────────────────────
 let selectedPresetId = null;
 let selectedJDType = 'team';
 let selectedCandidate = null;
@@ -655,18 +355,17 @@ let searchTimer = null;
 let searchData = [];
 let highlightIdx = -1;
 
+// ── STORAGE ────────────────────────────────────────────
 function getPresets() {
-  const stored = localStorage.getItem('hh_presets_v3');
-  return stored ? JSON.parse(stored) : DEFAULT_PRESETS;
+  const s = localStorage.getItem('hh_presets_v3');
+  return s ? JSON.parse(s) : DEFAULT_PRESETS;
 }
 function savePresets(p) { localStorage.setItem('hh_presets_v3', JSON.stringify(p)); }
 function getKeys() {
-  return {
-    ashby: localStorage.getItem('hh_ashby') || '',
-    openai: localStorage.getItem('hh_openai') || '',
-  };
+  return { ashby: localStorage.getItem('hh_ashby') || '', openai: localStorage.getItem('hh_openai') || '' };
 }
 
+// ── SETTINGS ───────────────────────────────────────────
 function openSettings() {
   const k = getKeys();
   document.getElementById('ashbyKey').value = k.ashby;
@@ -690,6 +389,7 @@ function toggleVis(id) {
   el.type = el.type === 'password' ? 'text' : 'password';
 }
 
+// ── PRESETS ────────────────────────────────────────────
 function renderPresetGrid() {
   const presets = getPresets();
   const grid = document.getElementById('presetGrid');
@@ -728,18 +428,12 @@ function renderJDSelector() {
   list.innerHTML = options.map(o => `
     <div class="jd-option ${selectedJDType === o.id ? 'selected' : ''}" onclick="selectJD('${o.id}')">
       <div class="radio-dot"></div>
-      <div>
-        <div class="jd-name">${o.name}</div>
-        <div class="jd-desc">${o.desc}</div>
-      </div>
+      <div><div class="jd-name">${o.name}</div><div class="jd-desc">${o.desc}</div></div>
     </div>
   `).join('');
 }
 
-function selectJD(type) {
-  selectedJDType = type;
-  renderJDSelector();
-}
+function selectJD(type) { selectedJDType = type; renderJDSelector(); }
 
 function renderSettingsPresets() {
   const presets = getPresets();
@@ -817,6 +511,7 @@ function deletePreset() {
   renderPresetGrid();
 }
 
+// ── TABS ───────────────────────────────────────────────
 function switchTab(tab) {
   activeTab = tab;
   document.getElementById('tabSearch').classList.toggle('active', tab === 'search');
@@ -828,6 +523,7 @@ function switchTab(tab) {
   document.getElementById('searchResults').style.display = 'none';
 }
 
+// ── SEARCH ─────────────────────────────────────────────
 function onSearchType() {
   clearTimeout(searchTimer);
   const val = document.getElementById('searchInput').value.trim();
@@ -845,27 +541,7 @@ function onSearchKey(e) {
 }
 
 function applyHighlight() {
-  document.querySelectorAll('.search-result-item').forEach((el,i) => {
-    el.classList.toggle('highlighted', i === highlightIdx);
-  });
-}
-
-async function ashbyCall(endpoint, body) {
-  const keys = getKeys();
-  const res = await fetch(PROXY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ endpoint, body, ashbyKey: keys.ashby }),
-  });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error('Proxy error ' + res.status + ': ' + t.substring(0,150));
-  }
-  const data = await res.json();
-  if (data.errors?.length && data.errors[0]) {
-  throw new Error('Ashby: ' + (data.errors[0].message || data.errors[0]));
-}
-  return data;
+  document.querySelectorAll('.search-result-item').forEach((el,i) => el.classList.toggle('highlighted', i === highlightIdx));
 }
 
 async function doSearch() {
@@ -878,16 +554,13 @@ async function doSearch() {
   btn.textContent = 'Searching…';
   showSearchMsg('<span class="mini-spinner"></span> Searching Ashby…');
   try {
-const data = await ashbyCall('/candidate.list', { limit: 500 });
-const allCandidates = data.results || [];
-const q = query.toLowerCase();
-searchData = allCandidates.filter(c =>
-  (c.name || '').toLowerCase().includes(q)
-).slice(0, 8);
-).slice(0, 8);
-highlightIdx = -1;
-if (!searchData.length) { showSearchMsg('No candidates found for "' + query + '"'); return; }
-renderSearchResults();
+    const data = await ashbyCall('/candidate.list', { limit: 500 });
+    const allCandidates = data.results || [];
+    const q = query.toLowerCase();
+    searchData = allCandidates.filter(c => (c.name || '').toLowerCase().includes(q)).slice(0, 8);
+    highlightIdx = -1;
+    if (!searchData.length) { showSearchMsg('No candidates found for "' + query + '"'); btn.disabled = false; btn.textContent = 'Search'; return; }
+    renderSearchResults();
   } catch(err) {
     showSearchMsg('Error: ' + err.message);
   }
@@ -903,23 +576,18 @@ function showSearchMsg(html) {
 
 function renderSearchResults() {
   const box = document.getElementById('searchResults');
-  box.innerHTML = searchData.map((c) => {
+  box.innerHTML = searchData.map(c => {
     const initials = getInitials(c.name || '?');
-    const app = (c.applications || [])[0] || {};
-    const role = app.job?.title || 'No active application';
-    const stage = app.currentInterviewStageName || '';
-    const appId = app.id || '';
-    const safeData = JSON.stringify({ id: c.id, applicationId: appId, name: c.name, role, stage, email: c.primaryEmailAddress?.value || '' });
-    return `
-      <div class="search-result-item" onclick='pickResult(${safeData.replace(/'/g,"&#39;")})'>
-        <div class="avatar">${initials}</div>
-        <div class="result-info">
-          <div class="result-name">${c.name || 'Unknown'}</div>
-          <div class="result-meta">${role}${c.primaryEmailAddress?.value ? ' · ' + c.primaryEmailAddress.value : ''}</div>
-        </div>
-        ${stage ? '<div class="result-stage">' + stage + '</div>' : ''}
+    const appId = (c.applicationIds || [])[0] || '';
+    const role = 'Candidate';
+    const safeData = JSON.stringify({ id: c.id, applicationId: appId, name: c.name, role, stage: '', email: c.primaryEmailAddress?.value || '' });
+    return `<div class="search-result-item" onclick='pickResult(${safeData.replace(/'/g,"&#39;")})'>
+      <div class="avatar">${initials}</div>
+      <div class="result-info">
+        <div class="result-name">${c.name || 'Unknown'}</div>
+        <div class="result-meta">${c.position || ''}${c.company ? ' · ' + c.company : ''}${c.primaryEmailAddress?.value ? ' · ' + c.primaryEmailAddress.value : ''}</div>
       </div>
-    `;
+    </div>`;
   }).join('');
   box.style.display = 'block';
 }
@@ -931,16 +599,14 @@ function pickResult(candidate) {
   document.getElementById('searchInput').value = '';
   const initials = getInitials(candidate.name || '?');
   const box = document.getElementById('selectedBox');
-  box.innerHTML = `
-    <div class="selected-candidate-box">
-      <div class="avatar" style="width:40px;height:40px;font-size:15px">${initials}</div>
-      <div class="info">
-        <div class="cname">${candidate.name}</div>
-        <div class="cmeta">${candidate.role || 'Unknown role'}${candidate.stage ? ' · ' + candidate.stage : ''}${candidate.applicationId ? ' · application found' : ''}</div>
-      </div>
-      <button class="clear-btn" onclick="clearCandidate()">✕</button>
+  box.innerHTML = `<div class="selected-candidate-box">
+    <div class="avatar" style="width:40px;height:40px;font-size:15px">${initials}</div>
+    <div class="info">
+      <div class="cname">${candidate.name}</div>
+      <div class="cmeta">${candidate.applicationId ? '✓ Application found' : 'No application ID'}</div>
     </div>
-  `;
+    <button class="clear-btn" onclick="clearCandidate()">✕</button>
+  </div>`;
   box.style.display = 'block';
 }
 
@@ -951,6 +617,27 @@ function clearCandidate() {
 
 function getInitials(name) {
   return name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+}
+
+// ── ASHBY API ──────────────────────────────────────────
+async function ashbyCall(endpoint, body) {
+  const keys = getKeys();
+  const res = await fetch(PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ endpoint, body: body || {}, ashbyKey: keys.ashby }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error('Proxy error ' + res.status + ': ' + t.substring(0,150));
+  }
+  const data = await res.json();
+  if (data.errors && data.errors.length > 0) {
+    const firstErr = data.errors[0];
+    const msg = typeof firstErr === 'string' ? firstErr : (firstErr.message || JSON.stringify(firstErr));
+    throw new Error('Ashby: ' + msg);
+  }
+  return data;
 }
 
 function parseLink(input) {
@@ -965,7 +652,6 @@ function parseLink(input) {
 }
 
 async function fetchData() {
-  const keys = getKeys();
   let applicationId = null;
   let candidateId = null;
 
@@ -985,7 +671,7 @@ async function fetchData() {
     const linkVal = document.getElementById('linkInput').value.trim();
     if (!linkVal) throw new Error('Please paste an Ashby link');
     const parsed = parseLink(linkVal);
-    if (!parsed) throw new Error('Could not find a valid ID in that link');
+    if (!parsed) throw new Error('Could not find a valid ID in that link — paste the full URL from Ashby');
     if (parsed.type === 'candidate') {
       candidateId = parsed.id;
       setStep('Finding applications…');
@@ -1021,12 +707,15 @@ async function fetchData() {
   };
 }
 
+// ── DATA EXTRACTION ────────────────────────────────────
 function extractProfile(candidate, application) {
   const lines = [];
   if (candidate.name) lines.push('Name: ' + candidate.name);
   if (candidate.primaryEmailAddress?.value) lines.push('Email: ' + candidate.primaryEmailAddress.value);
   if (candidate.currentTitle) lines.push('Current title: ' + candidate.currentTitle);
   if (candidate.currentCompany) lines.push('Current company: ' + candidate.currentCompany);
+  if (candidate.position) lines.push('Position: ' + candidate.position);
+  if (candidate.company) lines.push('Company: ' + candidate.company);
   if (candidate.linkedInUrl) lines.push('LinkedIn: ' + candidate.linkedInUrl);
   if (application.source?.label) lines.push('Source: ' + application.source.label);
   if (application.currentInterviewStageName) lines.push('Pipeline stage: ' + application.currentInterviewStageName);
@@ -1054,15 +743,11 @@ function extractFeedback(feedbacks) {
     const date = fb.submittedAt ? new Date(fb.submittedAt).toLocaleDateString() : '';
     const answers = (fb.feedbackFormAnswers||[]).filter(a=>a.value).map(a=>'  ['+a.label+']: '+a.value).join('\n');
     const notes = fb.notes || fb.note || '';
-    return [
-      '── ' + who + ' · ' + stage + (date ? ' · '+date : '') + ' ──',
-      'Overall: ' + rec,
-      answers ? 'Scorecard:\n' + answers : '',
-      notes ? 'Notes: ' + notes : '',
-    ].filter(Boolean).join('\n');
+    return ['── ' + who + ' · ' + stage + (date ? ' · '+date : '') + ' ──', 'Overall: ' + rec, answers ? 'Scorecard:\n' + answers : '', notes ? 'Notes: ' + notes : ''].filter(Boolean).join('\n');
   }).join('\n\n');
 }
 
+// ── OPENAI ─────────────────────────────────────────────
 async function callAI(openaiKey, prompt) {
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -1133,6 +818,7 @@ Return JSON in exactly this structure:
 Rules: interview_signals should be 5 if no interview notes yet. Confidence should be low if no interview notes. Name specific technologies and companies from their background. Do not invent information.`;
 }
 
+// ── MAIN REVIEW ────────────────────────────────────────
 async function runReview() {
   const keys = getKeys();
   const extra = document.getElementById('extraContext').value.trim();
@@ -1163,7 +849,6 @@ async function runReview() {
   try {
     setStep('Connecting to Ashby…');
     const { application, candidate, job, feedbacks } = await fetchData();
-
     const candidateName = candidate.name || selectedCandidate?.name || 'Candidate';
     const roleName = job.title || application.job?.title || preset.name;
     const profile = extractProfile(candidate, application);
@@ -1171,7 +856,6 @@ async function runReview() {
     const feedback = extractFeedback(feedbacks);
 
     setStep('Running AI analysis…');
-
     let html = '';
 
     if (selectedJDType === 'both') {
@@ -1204,6 +888,7 @@ async function runReview() {
 
 function setStep(text) { document.getElementById('loadingStep').textContent = text; }
 
+// ── RENDER RESULTS ─────────────────────────────────────
 function sc(s) { return s >= 7 ? 's-high' : s >= 5 ? 's-mid' : 's-low'; }
 function fc(s) { return s >= 7 ? 'f-high' : s >= 5 ? 'f-mid' : 'f-low'; }
 
@@ -1213,12 +898,10 @@ function renderResult(r, candidateName, roleName, jdLabel) {
   const vClass = 'verdict-' + verdict;
   const scores = r.scores || {};
   const os = r.overall_score || 0;
-
   const signals = (r.hire_signals||[]).map(s=>'<li><span>✅</span><span>'+s+'</span></li>').join('') || '<li><span>—</span><span>None identified</span></li>';
   const concerns = (r.concerns||[]).map(c=>'<li><span>⚠️</span><span>'+c+'</span></li>').join('') || '<li><span>—</span><span>None identified</span></li>';
 
-  return `
-<div class="result-card">
+  return `<div class="result-card">
   <div class="result-header">
     <div>
       <h3>${candidateName}</h3>
@@ -1227,7 +910,6 @@ function renderResult(r, candidateName, roleName, jdLabel) {
     </div>
     <div class="verdict ${vClass}">${vLabel}</div>
   </div>
-
   <div class="score-row">
     ${['jd_fit','cv_strength','interview_signals','team_fit'].map((key,i) => {
       const labels = ['JD Fit','CV Strength','Interview','Team Fit'];
@@ -1235,46 +917,34 @@ function renderResult(r, candidateName, roleName, jdLabel) {
       return '<div class="score-box"><div class="score-label">'+labels[i]+'</div><div class="score-val '+sc(val)+'">'+val+'</div><div class="score-bar"><div class="score-fill '+fc(val)+'" style="width:'+val*10+'%"></div></div></div>';
     }).join('')}
   </div>
-
   <div class="result-body">
     <div class="result-section">
       <div class="section-label">Overall score</div>
       <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px">
-        <span class="big-score ${sc(os)}">${os}</span>
-        <span class="denom">/10</span>
+        <span class="big-score ${sc(os)}">${os}</span><span class="denom">/10</span>
       </div>
     </div>
-
     <div class="result-section">
       <div class="section-label">Reasoning</div>
       <p>${r.reasoning||'No reasoning provided'}</p>
     </div>
-
     <div class="result-section">
       <div class="signals-grid">
-        <div>
-          <div class="signal-heading" style="color:#1a7f37">Hire signals</div>
-          <ul class="signal-list">${signals}</ul>
-        </div>
-        <div>
-          <div class="signal-heading" style="color:#d70015">Concerns</div>
-          <ul class="signal-list">${concerns}</ul>
-        </div>
+        <div><div class="signal-heading" style="color:#1a7f37">Hire signals</div><ul class="signal-list">${signals}</ul></div>
+        <div><div class="signal-heading" style="color:#d70015">Concerns</div><ul class="signal-list">${concerns}</ul></div>
       </div>
     </div>
-
     ${r.must_have_check ? '<div class="result-section"><div class="section-label">Must-have check</div><p>'+r.must_have_check+'</p></div>' : ''}
-
     <div class="result-section">
       <div class="section-label">Recommended next step</div>
       <p style="font-weight:600">${r.next_step||'—'}</p>
     </div>
-
     ${r.data_gaps && r.data_gaps.toLowerCase() !== 'none' ? '<div class="result-section"><div class="alert alert-warning" style="margin:0"><strong>Data gaps:</strong> '+r.data_gaps+'</div></div>' : ''}
   </div>
 </div>`;
 }
 
+// ── INIT ───────────────────────────────────────────────
 function init() {
   renderPresetGrid();
   const keys = getKeys();
@@ -1282,8 +952,9 @@ function init() {
     document.getElementById('errorBox').innerHTML = '<div class="alert alert-info">👋 Welcome! Open <strong>Settings ⚙️</strong> top right to add your Ashby and OpenAI API keys to get started.</div>';
     document.getElementById('errorBox').style.display = 'block';
   }
-document.addEventListener('click', e => {
-    if (!e.target.closest('.search-wrap') && !e.target.closest('.search-result-item')) {
+  document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('searchWrap');
+    if (wrap && !wrap.contains(e.target)) {
       document.getElementById('searchResults').style.display = 'none';
     }
   });
