@@ -3,125 +3,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Heidi Hiring Review Tool</title>
+<title>Heidi Hiring Review</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f7; color: #1d1d1f; min-height: 100vh; }
-  .header { background: white; border-bottom: 1px solid #e5e5e7; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
-  .header h1 { font-size: 18px; font-weight: 600; }
-  .header .subtitle { font-size: 13px; color: #86868b; margin-top: 2px; }
-  .settings-btn { background: none; border: 1px solid #d2d2d7; border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer; color: #1d1d1f; font-family: inherit; }
-  .settings-btn:hover { background: #f5f5f7; }
-  .container { max-width: 860px; margin: 0 auto; padding: 32px 24px; }
-  .card { background: white; border-radius: 16px; border: 1px solid #e5e5e7; padding: 28px; margin-bottom: 20px; }
-  .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
-  .step-number { width: 24px; height: 24px; background: #0071e3; color: white; border-radius: 50%; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px; }
-  label { display: block; font-size: 13px; font-weight: 500; color: #3a3a3c; margin-bottom: 6px; }
-  input[type="text"], input[type="password"], input[type="search"], textarea { width: 100%; padding: 10px 14px; border: 1px solid #d2d2d7; border-radius: 10px; font-size: 14px; font-family: inherit; color: #1d1d1f; background: white; outline: none; transition: border-color 0.2s; }
-  input:focus, textarea:focus { border-color: #0071e3; box-shadow: 0 0 0 3px rgba(0,113,227,0.15); }
-  textarea { resize: vertical; line-height: 1.5; }
-  .preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-  .preset-card { border: 2px solid #e5e5e7; border-radius: 12px; padding: 14px; cursor: pointer; transition: all 0.15s; position: relative; }
-  .preset-card:hover { border-color: #0071e3; background: #f0f7ff; }
-  .preset-card.selected { border-color: #0071e3; background: #f0f7ff; }
-  .preset-card .preset-name { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-  .preset-card .preset-desc { font-size: 11px; color: #86868b; line-height: 1.4; }
-  .selected-badge { display: none; position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; background: #0071e3; border-radius: 50%; align-items: center; justify-content: center; color: white; font-size: 10px; }
-  .preset-card.selected .selected-badge { display: flex; }
-  .jd-options { margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e5e7; }
-  .jd-option { border: 2px solid #e5e5e7; border-radius: 10px; padding: 12px 14px; cursor: pointer; margin-bottom: 8px; transition: all 0.15s; display: flex; align-items: center; gap: 10px; }
-  .jd-option:hover { border-color: #0071e3; background: #f0f7ff; }
-  .jd-option.selected { border-color: #0071e3; background: #f0f7ff; }
-  .jd-option .jd-name { font-size: 13px; font-weight: 600; }
-  .jd-option .jd-desc { font-size: 12px; color: #86868b; margin-top: 2px; }
-  .radio-dot { width: 16px; height: 16px; border: 2px solid #d2d2d7; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-  .jd-option.selected .radio-dot { border-color: #0071e3; }
-  .jd-option.selected .radio-dot::after { content: ''; width: 8px; height: 8px; background: #0071e3; border-radius: 50%; }
-  .search-tabs { display: flex; gap: 4px; background: #f5f5f7; padding: 4px; border-radius: 10px; margin-bottom: 16px; }
-  .search-tab { flex: 1; padding: 8px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; background: none; color: #86868b; transition: all 0.15s; }
-  .search-tab.active { background: white; color: #1d1d1f; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  .search-wrap { position: relative; }
-  .search-row { display: flex; gap: 8px; }
-  .search-row input { flex: 1; }
-  .btn-search { background: #0071e3; color: white; border: none; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0; }
-  .btn-search:hover { background: #0077ed; }
-  .btn-search:disabled { background: #86868b; cursor: not-allowed; }
-  .search-results { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: white; border: 1px solid #d2d2d7; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); z-index: 40; max-height: 320px; overflow-y: auto; display: none; }
-  .search-result-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f5f5f7; display: flex; align-items: center; gap: 12px; transition: background 0.1s; }
-  .search-result-item:last-child { border-bottom: none; }
-  .search-result-item:hover { background: #f5f5f7; }
-  .avatar { width: 36px; height: 36px; background: #e8f4ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #0071e3; flex-shrink: 0; }
-  .result-info { flex: 1; min-width: 0; }
-  .result-name { font-size: 14px; font-weight: 500; }
-  .result-meta { font-size: 12px; color: #86868b; margin-top: 2px; }
-  .result-stage { font-size: 11px; padding: 3px 8px; border-radius: 100px; background: #f0f0f5; color: #3a3a3c; white-space: nowrap; flex-shrink: 0; }
-  .search-msg { padding: 20px; text-align: center; color: #86868b; font-size: 13px; }
-  .mini-spinner { width: 16px; height: 16px; border: 2px solid #e5e5e7; border-top-color: #0071e3; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; margin-right: 6px; }
-  .selected-candidate-box { display: flex; align-items: center; gap: 12px; padding: 14px; background: #f0f7ff; border: 1px solid #b3d9ff; border-radius: 12px; margin-top: 12px; }
-  .selected-candidate-box .info { flex: 1; }
-  .selected-candidate-box .cname { font-size: 14px; font-weight: 600; }
-  .selected-candidate-box .cmeta { font-size: 12px; color: #0071e3; margin-top: 2px; }
-  .clear-btn { background: none; border: none; cursor: pointer; color: #86868b; font-size: 20px; padding: 4px; line-height: 1; }
-  .clear-btn:hover { color: #d70015; }
-  .hint { font-size: 12px; color: #86868b; margin-top: 6px; line-height: 1.4; }
-  .btn-primary { background: #0071e3; color: white; border: none; border-radius: 10px; padding: 14px 24px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; font-family: inherit; transition: background 0.2s; }
-  .btn-primary:hover { background: #0077ed; }
-  .btn-primary:disabled { background: #86868b; cursor: not-allowed; }
-  .btn-secondary { background: #f5f5f7; color: #1d1d1f; border: 1px solid #d2d2d7; border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; }
-  .btn-secondary:hover { background: #e5e5e7; }
-  .btn-danger { background: #fff0f0; color: #d70015; border: 1px solid #ffb3b8; border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; }
-  .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
-  .alert-error { background: #ffe0e3; color: #d70015; border: 1px solid #ffb3b8; }
-  .alert-info { background: #e8f4ff; color: #0071e3; border: 1px solid #b3d9ff; }
-  .alert-warning { background: #fff3d6; color: #946800; border: 1px solid #ffd580; }
-  .loading-card { background: white; border-radius: 16px; border: 1px solid #e5e5e7; margin-top: 20px; }
-  .loading-state { text-align: center; padding: 48px 24px; }
-  .spinner { width: 40px; height: 40px; border: 3px solid #e5e5e7; border-top-color: #0071e3; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-state p { color: #86868b; font-size: 14px; }
-  .loading-step { font-size: 13px; color: #0071e3; margin-top: 8px; }
-  .result-card { background: white; border-radius: 16px; border: 1px solid #e5e5e7; overflow: hidden; margin-top: 20px; }
-  .result-header { padding: 24px 28px; border-bottom: 1px solid #e5e5e7; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-  .result-header h3 { font-size: 20px; font-weight: 600; }
-  .result-header .rmeta { font-size: 13px; color: #86868b; margin-top: 4px; }
-  .verdict { padding: 10px 20px; border-radius: 100px; font-size: 14px; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
-  .verdict-hire { background: #d1f5e0; color: #1a7f37; }
-  .verdict-no_hire { background: #ffe0e3; color: #d70015; }
-  .verdict-maybe { background: #fff3d6; color: #946800; }
-  .score-row { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid #e5e5e7; }
-  .score-box { padding: 20px; text-align: center; border-right: 1px solid #e5e5e7; }
-  .score-box:last-child { border-right: none; }
-  .score-label { font-size: 11px; color: #86868b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 500; }
-  .score-val { font-size: 28px; font-weight: 700; line-height: 1; }
-  .score-bar { height: 4px; background: #f0f0f0; border-radius: 2px; margin-top: 8px; overflow: hidden; }
-  .score-fill { height: 100%; border-radius: 2px; }
-  .s-high { color: #1a7f37; } .s-mid { color: #946800; } .s-low { color: #d70015; }
-  .f-high { background: #1a7f37; } .f-mid { background: #946800; } .f-low { background: #d70015; }
-  .result-body { padding: 24px 28px; }
-  .result-section { margin-bottom: 22px; }
-  .result-section:last-child { margin-bottom: 0; }
-  .section-label { font-size: 11px; font-weight: 600; color: #86868b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-  .result-section p { font-size: 15px; line-height: 1.6; }
-  .big-score { font-size: 48px; font-weight: 700; line-height: 1; }
-  .denom { font-size: 20px; color: #86868b; }
-  .signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .signal-list { list-style: none; }
-  .signal-list li { font-size: 14px; line-height: 1.5; padding: 7px 0; border-bottom: 1px solid #f5f5f7; display: flex; gap: 8px; }
-  .signal-list li:last-child { border-bottom: none; }
-  .signal-heading { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: white; border-radius: 16px; padding: 28px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; }
-  .modal h2 { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
-  .form-group { margin-bottom: 16px; }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5e5e7; }
-  .settings-section { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #e5e5e7; }
-  .settings-section:last-child { border-bottom: none; margin-bottom: 0; }
-  .settings-section h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
-  .key-row { display: flex; gap: 8px; align-items: center; }
-  .key-row input { flex: 1; font-family: monospace; font-size: 12px; }
-  .preset-list-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f5f5f7; }
-  .preset-list-item:last-child { border-bottom: none; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f7;color:#1d1d1f;min-height:100vh}
+.header{background:white;border-bottom:1px solid #e5e5e7;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.header h1{font-size:18px;font-weight:600}
+.subtitle{font-size:13px;color:#86868b;margin-top:2px}
+.sbtn{background:none;border:1px solid #d2d2d7;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;color:#1d1d1f;font-family:inherit}
+.sbtn:hover{background:#f5f5f7}
+.container{max-width:860px;margin:0 auto;padding:32px 24px}
+.card{background:white;border-radius:16px;border:1px solid #e5e5e7;padding:28px;margin-bottom:20px}
+.card h2{font-size:15px;font-weight:600;margin-bottom:16px}
+.stepn{width:24px;height:24px;background:#0071e3;color:white;border-radius:50%;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-right:8px}
+label{display:block;font-size:13px;font-weight:500;color:#3a3a3c;margin-bottom:6px}
+input[type=text],input[type=password],input[type=search],textarea{width:100%;padding:10px 14px;border:1px solid #d2d2d7;border-radius:10px;font-size:14px;font-family:inherit;color:#1d1d1f;background:white;outline:none}
+input:focus,textarea:focus{border-color:#0071e3;box-shadow:0 0 0 3px rgba(0,113,227,0.15)}
+textarea{resize:vertical;line-height:1.5}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.pcard{border:2px solid #e5e5e7;border-radius:12px;padding:14px;cursor:pointer;position:relative;transition:all 0.15s}
+.pcard:hover{border-color:#0071e3;background:#f0f7ff}
+.pcard.sel{border-color:#0071e3;background:#f0f7ff}
+.pname{font-size:13px;font-weight:600;margin-bottom:6px}
+.pdesc{font-size:11px;color:#86868b;line-height:1.4}
+.badge{display:none;position:absolute;top:8px;right:8px;width:18px;height:18px;background:#0071e3;border-radius:50%;align-items:center;justify-content:center;color:white;font-size:10px}
+.pcard.sel .badge{display:flex}
+.jdwrap{margin-top:16px;padding-top:16px;border-top:1px solid #e5e5e7;display:none}
+.jdopt{border:2px solid #e5e5e7;border-radius:10px;padding:12px 14px;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;gap:10px;transition:all 0.15s}
+.jdopt:hover{border-color:#0071e3;background:#f0f7ff}
+.jdopt.sel{border-color:#0071e3;background:#f0f7ff}
+.jdname{font-size:13px;font-weight:600}
+.jddesc{font-size:12px;color:#86868b;margin-top:2px}
+.rdot{width:16px;height:16px;border:2px solid #d2d2d7;border-radius:50%;flex-shrink:0}
+.jdopt.sel .rdot{border-color:#0071e3;background:#0071e3}
+.tabs{display:flex;gap:4px;background:#f5f5f7;padding:4px;border-radius:10px;margin-bottom:16px}
+.tab{flex:1;padding:8px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;background:none;color:#86868b}
+.tab.active{background:white;color:#1d1d1f;box-shadow:0 1px 4px rgba(0,0,0,0.1)}
+.swrap{position:relative}
+.srow{display:flex;gap:8px}
+.srow input{flex:1}
+.bsearch{background:#0071e3;color:white;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap}
+.bsearch:disabled{background:#86868b;cursor:not-allowed}
+.sresults{position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;border:1px solid #d2d2d7;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.12);z-index:40;max-height:320px;overflow-y:auto;display:none}
+.sri{padding:12px 16px;cursor:pointer;border-bottom:1px solid #f5f5f7;display:flex;align-items:center;gap:12px}
+.sri:last-child{border-bottom:none}
+.sri:hover{background:#f5f5f7}
+.av{width:36px;height:36px;background:#e8f4ff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#0071e3;flex-shrink:0}
+.rname{font-size:14px;font-weight:500}
+.rmeta{font-size:12px;color:#86868b;margin-top:2px}
+.smsg{padding:20px;text-align:center;color:#86868b;font-size:13px}
+.mspinner{width:16px;height:16px;border:2px solid #e5e5e7;border-top-color:#0071e3;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
+.selbox{display:flex;align-items:center;gap:12px;padding:14px;background:#f0f7ff;border:1px solid #b3d9ff;border-radius:12px;margin-top:12px}
+.selbox-info{flex:1}
+.selbox-name{font-size:14px;font-weight:600}
+.selbox-meta{font-size:12px;color:#0071e3;margin-top:2px}
+.clearbtn{background:none;border:none;cursor:pointer;color:#86868b;font-size:20px;padding:4px;line-height:1}
+.clearbtn:hover{color:#d70015}
+.hint{font-size:12px;color:#86868b;margin-top:6px;line-height:1.4}
+.bprimary{background:#0071e3;color:white;border:none;border-radius:10px;padding:14px 24px;font-size:15px;font-weight:600;cursor:pointer;width:100%;font-family:inherit}
+.bprimary:hover{background:#0077ed}
+.bprimary:disabled{background:#86868b;cursor:not-allowed}
+.bsec{background:#f5f5f7;color:#1d1d1f;border:1px solid #d2d2d7;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+.bsec:hover{background:#e5e5e7}
+.bdanger{background:#fff0f0;color:#d70015;border:1px solid #ffb3b8;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+.alert{padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:16px;line-height:1.5}
+.aerror{background:#ffe0e3;color:#d70015;border:1px solid #ffb3b8}
+.ainfo{background:#e8f4ff;color:#0071e3;border:1px solid #b3d9ff}
+.awarn{background:#fff3d6;color:#946800;border:1px solid #ffd580}
+.lcard{background:white;border-radius:16px;border:1px solid #e5e5e7;margin-top:20px}
+.lstate{text-align:center;padding:48px 24px}
+.spinner{width:40px;height:40px;border:3px solid #e5e5e7;border-top-color:#0071e3;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lstate p{color:#86868b;font-size:14px}
+.lstep{font-size:13px;color:#0071e3;margin-top:8px}
+.rcard{background:white;border-radius:16px;border:1px solid #e5e5e7;overflow:hidden;margin-top:20px}
+.rheader{padding:24px 28px;border-bottom:1px solid #e5e5e7;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.rheader h3{font-size:20px;font-weight:600}
+.rsubtitle{font-size:13px;color:#86868b;margin-top:4px}
+.verdict{padding:10px 20px;border-radius:100px;font-size:14px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.vhire{background:#d1f5e0;color:#1a7f37}
+.vnohire{background:#ffe0e3;color:#d70015}
+.vmaybe{background:#fff3d6;color:#946800}
+.scrow{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e5e5e7}
+.scbox{padding:20px;text-align:center;border-right:1px solid #e5e5e7}
+.scbox:last-child{border-right:none}
+.sclabel{font-size:11px;color:#86868b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:500}
+.scval{font-size:28px;font-weight:700;line-height:1}
+.scbar{height:4px;background:#f0f0f0;border-radius:2px;margin-top:8px;overflow:hidden}
+.scfill{height:100%;border-radius:2px}
+.sh{color:#1a7f37}.sm{color:#946800}.sl{color:#d70015}
+.fh{background:#1a7f37}.fm{background:#946800}.fl{background:#d70015}
+.rbody{padding:24px 28px}
+.rsec{margin-bottom:22px}
+.rsec:last-child{margin-bottom:0}
+.slabel{font-size:11px;font-weight:600;color:#86868b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.rsec p{font-size:15px;line-height:1.6}
+.bigscore{font-size:48px;font-weight:700;line-height:1}
+.denom{font-size:20px;color:#86868b}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.slist{list-style:none}
+.slist li{font-size:14px;line-height:1.5;padding:7px 0;border-bottom:1px solid #f5f5f7;display:flex;gap:8px}
+.slist li:last-child{border-bottom:none}
+.sheading{font-size:13px;font-weight:600;margin-bottom:8px}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.mbox{background:white;border-radius:16px;padding:28px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto}
+.mbox h2{font-size:18px;font-weight:600;margin-bottom:20px}
+.fg{margin-bottom:16px}
+.mactions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid #e5e5e7}
+.msec{margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid #e5e5e7}
+.msec:last-child{border-bottom:none;margin-bottom:0}
+.msec h3{font-size:14px;font-weight:600;margin-bottom:12px}
+.krow{display:flex;gap:8px;align-items:center}
+.krow input{flex:1;font-family:monospace;font-size:12px}
+.pli{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f5f5f7}
+.pli:last-child{border-bottom:none}
 </style>
 </head>
 <body>
@@ -131,844 +127,661 @@
     <h1>Heidi Hiring Review</h1>
     <div class="subtitle">AI-powered candidate evaluation</div>
   </div>
-  <button class="settings-btn" onclick="openSettings()">⚙️ Settings</button>
+  <button class="sbtn" onclick="openSettings()">⚙️ Settings</button>
 </div>
 
 <div class="container">
+
   <div class="card">
-    <h2><span class="step-number">1</span>Choose team</h2>
-    <div class="preset-grid" id="presetGrid"></div>
-    <div id="jdSelectorWrap" style="display:none">
-      <div class="jd-options">
-        <label style="margin-bottom:10px">Which job description to evaluate against?</label>
-        <div id="jdOptionsList"></div>
-      </div>
+    <h2><span class="stepn">1</span>Choose team</h2>
+    <div class="pgrid" id="presetGrid"></div>
+    <div class="jdwrap" id="jdWrap">
+      <label style="margin-bottom:10px">Which job description to evaluate against?</label>
+      <div id="jdList"></div>
     </div>
   </div>
 
   <div class="card">
-    <h2><span class="step-number">2</span>Find candidate</h2>
-    <div class="search-tabs">
-      <button class="search-tab active" id="tabSearch" onclick="switchTab('search')">🔍 Search by name</button>
-      <button class="search-tab" id="tabLink" onclick="switchTab('link')">🔗 Paste Ashby link</button>
+    <h2><span class="stepn">2</span>Find candidate</h2>
+    <div class="tabs">
+      <button class="tab active" id="tabSearch" onclick="switchTab('search')">🔍 Search by name</button>
+      <button class="tab" id="tabLink" onclick="switchTab('link')">🔗 Paste Ashby link</button>
     </div>
     <div id="panelSearch">
-      <label>Search for a candidate in Ashby</label>
-      <div class="search-wrap" id="searchWrap">
-        <div class="search-row">
-          <input type="search" id="searchInput" placeholder="Type a candidate name…" autocomplete="off" oninput="onSearchType()" onkeydown="onSearchKey(event)" />
-          <button class="btn-search" id="searchBtn" onclick="doSearch()">Search</button>
+      <label>Search for a candidate</label>
+      <div class="swrap" id="searchWrap">
+        <div class="srow">
+          <input type="search" id="searchInput" placeholder="Type a candidate name…" autocomplete="off" oninput="onType()" />
+          <button class="bsearch" id="searchBtn" onclick="doSearch()">Search</button>
         </div>
-        <div class="search-results" id="searchResults"></div>
+        <div class="sresults" id="searchResults"></div>
       </div>
       <div class="hint">Searches candidates in your Ashby account</div>
     </div>
     <div id="panelLink" style="display:none">
       <label>Paste the Ashby URL for this candidate</label>
       <input type="text" id="linkInput" placeholder="https://app.ashbyhq.com/candidates/..." />
-      <div class="hint">Open the candidate in Ashby and copy the URL from your browser address bar</div>
+      <div class="hint">Copy the URL from your browser when viewing a candidate in Ashby</div>
     </div>
-    <div id="selectedBox" style="display:none"></div>
+    <div id="selBox" style="display:none"></div>
   </div>
 
   <div class="card">
-    <h2><span class="step-number">3</span>Extra context <span style="font-weight:400;color:#86868b;font-size:13px">(optional)</span></h2>
-    <textarea id="extraContext" rows="3" placeholder="Anything extra to factor in — e.g. 'referred by the CTO', 'met them at a conference'…"></textarea>
+    <h2><span class="stepn">3</span>Extra context <span style="font-weight:400;color:#86868b;font-size:13px">(optional)</span></h2>
+    <textarea id="extraCtx" rows="3" placeholder="e.g. referred by the CTO, met at a conference, wants to relocate…"></textarea>
   </div>
 
-  <div id="errorBox" style="display:none"></div>
+  <div id="errBox" style="display:none"></div>
+  <button class="bprimary" id="runBtn" onclick="runReview()">Review candidate →</button>
 
-  <button class="btn-primary" id="runBtn" onclick="runReview()">Review candidate →</button>
-
-  <div class="loading-card" id="loadingCard" style="display:none">
-    <div class="loading-state">
+  <div class="lcard" id="loadCard" style="display:none">
+    <div class="lstate">
       <div class="spinner"></div>
       <p>Analysing candidate…</p>
-      <div class="loading-step" id="loadingStep">Connecting to Ashby…</div>
+      <div class="lstep" id="lstep">Connecting to Ashby…</div>
     </div>
   </div>
 
   <div id="resultsArea"></div>
 </div>
 
-<!-- Settings Modal -->
-<div class="modal-overlay" id="settingsModal">
-  <div class="modal">
+<!-- Settings -->
+<div class="modal" id="settingsModal">
+  <div class="mbox">
     <h2>⚙️ Settings</h2>
-    <div class="settings-section">
+    <div class="msec">
       <h3>🔑 API Keys</h3>
-      <div class="form-group">
+      <div class="fg">
         <label>Ashby API Key</label>
-        <div class="key-row">
+        <div class="krow">
           <input type="password" id="ashbyKey" placeholder="Your Ashby API key" />
-          <button class="btn-secondary" onclick="toggleVis('ashbyKey')">Show</button>
+          <button class="bsec" onclick="tv('ashbyKey')">Show</button>
         </div>
         <div class="hint">Ashby → Settings → API Keys → Create new key</div>
       </div>
-      <div class="form-group">
+      <div class="fg">
         <label>OpenAI API Key</label>
-        <div class="key-row">
+        <div class="krow">
           <input type="password" id="openaiKey" placeholder="sk-proj-..." />
-          <button class="btn-secondary" onclick="toggleVis('openaiKey')">Show</button>
+          <button class="bsec" onclick="tv('openaiKey')">Show</button>
         </div>
         <div class="hint">platform.openai.com/api-keys → Create new secret key</div>
       </div>
-      <button class="btn-secondary" style="margin-top:10px" onclick="saveKeys()">Save keys</button>
+      <button class="bsec" style="margin-top:10px" onclick="saveKeys()">Save keys</button>
       <span id="savedMsg" style="display:none;margin-left:10px;font-size:13px;color:#1a7f37">✓ Saved</span>
     </div>
-    <div class="settings-section">
+    <div class="msec">
       <h3>📋 Team Presets</h3>
-      <div id="settingsPresetList" style="margin-bottom:16px"></div>
-      <button class="btn-secondary" onclick="openAddPreset()">+ Add team</button>
+      <div id="presetList" style="margin-bottom:16px"></div>
+      <button class="bsec" onclick="openAdd()">+ Add team</button>
     </div>
-    <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeSettings()">Close</button>
+    <div class="mactions">
+      <button class="bsec" onclick="closeSettings()">Close</button>
     </div>
   </div>
 </div>
 
-<!-- Preset Modal -->
-<div class="modal-overlay" id="presetModal">
-  <div class="modal">
-    <h2 id="presetModalTitle">Add team preset</h2>
-    <div id="presetErr" style="display:none"></div>
-    <div class="form-group"><label>Team name</label><input type="text" id="pName" placeholder="e.g. Orchestration" /></div>
-    <div class="form-group"><label>What this team does</label><textarea id="pDesc" rows="4" placeholder="Describe the team's mission…"></textarea></div>
-    <div class="form-group"><label>Job description</label><textarea id="pJD" rows="6" placeholder="Paste the JD here…"></textarea></div>
-    <div class="form-group"><label>Must-haves</label><textarea id="pMust" rows="3" placeholder="Hard requirements…"></textarea></div>
-    <div class="form-group"><label>Red flags</label><textarea id="pFlags" rows="3" placeholder="Things that would make this a no-hire…"></textarea></div>
-    <div class="modal-actions">
-      <button class="btn-danger" id="deletePBtn" style="display:none;margin-right:auto" onclick="deletePreset()">Delete</button>
-      <button class="btn-secondary" onclick="closePresetModal()">Cancel</button>
-      <button class="btn-primary" style="width:auto" onclick="savePreset()">Save</button>
+<!-- Preset modal -->
+<div class="modal" id="presetModal">
+  <div class="mbox">
+    <h2 id="pModalTitle">Add team preset</h2>
+    <div id="pErr" style="display:none"></div>
+    <div class="fg"><label>Team name</label><input type="text" id="pName" placeholder="e.g. Orchestration" /></div>
+    <div class="fg"><label>What this team does</label><textarea id="pDesc" rows="4" placeholder="Describe the team mission…"></textarea></div>
+    <div class="fg"><label>Job description</label><textarea id="pJD" rows="6" placeholder="Paste the JD here…"></textarea></div>
+    <div class="fg"><label>Must-haves</label><textarea id="pMust" rows="3" placeholder="Hard requirements…"></textarea></div>
+    <div class="fg"><label>Red flags</label><textarea id="pFlags" rows="3" placeholder="No-hire signals…"></textarea></div>
+    <div class="mactions">
+      <button class="bdanger" id="pDelBtn" style="display:none;margin-right:auto" onclick="delPreset()">Delete</button>
+      <button class="bsec" onclick="closePreset()">Cancel</button>
+      <button class="bprimary" style="width:auto" onclick="savePreset()">Save</button>
     </div>
   </div>
 </div>
 
 <script>
-const PROXY_URL = 'https://ashby-proxy-jb4mjfwcz-hang-dels-projects.vercel.app/api/proxy';
+var PROXY = 'https://ashby-proxy-jb4mjfwcz-hang-dels-projects.vercel.app/api/proxy';
 
-const APPLIED_AI_JD = `The Role
+var AI_JD = 'Senior AI Engineer. Lead R&D for step-changes in model performance. Build fine-tuned LLMs. Create evaluation frameworks. Develop novel techniques for healthcare. Requirements: proven track record improving large-scale AI models, shipped LLM features to production, expert Python and PyTorch/TensorFlow, deep ML and stats foundations. PhD preferred. Bonus: publications, RL expertise, research team leadership.';
 
-Working closely with our Engineering Manager, you will be a Senior AI Engineer responsible for solving our most critical model-related challenges.
-
-What you will do:
-- Lead major R&D projects focused on step-changes in model performance
-- Tackle the most ambiguous technical problems related to model behaviour, alignment, and safety
-- Build cutting-edge fine-tuned LLMs using the latest tools and frameworks
-- Partner with product and medical knowledge teams to build agentic AI and evaluation frameworks
-- Develop novel fine-tuning or data generation techniques for our healthcare domain
-- Mentor mid-level and junior engineers
-
-What we look for:
-- Proven track record leading projects resulting in significant improvements to large-scale AI models
-- Hands-on experience building scalable AI products shipped to real users in production
-- Expert in Python, deep learning frameworks (PyTorch/TensorFlow), and transformer architecture theory
-- Deep foundations in mathematics and statistics
-- PhD in Computer Science, AI, Statistics, or related field highly preferred
-
-Bonus: Strong publication record. Experience building research teams. Expertise in reinforcement learning or data-centric AI.`;
-
-const DEFAULT_PRESETS = [
-  {
-    id: 'orchestration', name: 'Orchestration',
-    desc: 'Connective tissue between all Heidi capabilities — context retrieval, intent routing, memory, tool orchestration',
-    teamDesc: `The Orchestration team builds the connective tissue that lets all of Heidi's capabilities work together as one consistent experience. They own: context retrieval, intent routing, memory, and tool orchestration. This allows Heidi to move from "Generate a note" to "Complete the work around care" — multi-step admin workflows that touch different parts of the product and sometimes external systems.`,
-    jd: `You will operate as a Staff+ AI scientist/engineer on the Orchestration team. You will own the design and delivery of a clinician-grade retrieval and question-answering stack across data ingestion, indexing, ranking, grounding, and safe deployment.
-
-What you will do:
-- Define the end-to-end architecture for literature and guideline ingestion, normalization, metadata extraction, de-duplication, and versioning
-- Build hybrid search and retrieval: lexical + vector + re-ranking, with tight latency budgets and cost controls
-- Design grounding and answer synthesis that cite sources, preserve provenance, and expose confidence and abstention
-- Lead model work across prompting, fine-tuning, distillation, and tool use
-- Stand up gold-standard evaluation: offline IR metrics (nDCG, MAP, recall), factuality/faithfulness audits
-- Run online experiments at scale, define guardrails, KPIs, and ship A/Bs
-- Productionize services with observability, tracing, canaries, rollbacks, and incident playbooks
-- Set data governance for medical content: access control, PHI handling, audit logs
-- Partner with clinicians to define intents, schemas, and acceptance criteria
-- Coach engineers and scientists
-
-What we look for:
-- Staff-level track record shipping search, NLP, or LLM systems that serve real users at scale
-- Mastery of Python and SQL, strong software engineering fundamentals
-- Depth in modern IR/NLP: embeddings, ANN indexes, re-rankers, RAG, prompt/program synthesis
-- Experience building data pipelines: parsing PDFs/HTML, OCR, metadata extraction
-- Familiarity with PyTorch plus distributed training/inference patterns
-- MLOps and reliability: containers, Kubernetes, feature/model registries, experiment tracking
-- Evidence of rigorous evaluation design
-- Clear thinking on safety: hallucination controls, calibration, abstention, red-teaming
-
-Bonus: Search relevance expertise for long-form citation-heavy domains. Knowledge of biomedical ontologies. Hybrid retrieval stacks and learned re-rankers.`,
-    mustHaves: 'Production experience shipping search, NLP, or LLM systems to real users at scale. Hands-on RAG or hybrid retrieval experience. Strong Python and software engineering fundamentals. Rigorous approach to evaluation and measurement.',
-    redFlags: 'Only academic background with nothing shipped to production. No experience with retrieval or search systems. Weak on evaluation. No safety awareness. Purely infrastructure focused with no product sense.',
-  },
-  {
-    id: 'evidence', name: 'Evidence',
-    desc: 'Clinical evidence product — citation-backed answers from trusted medical sources',
-    teamDesc: `The Evidence team builds Heidi Evidence: a clinical evidence product that helps clinicians ask questions and get citation-backed answers grounded in trusted sources, with transparent source attribution.`,
-    jd: 'Senior Software Engineer focused on retrieval systems, RAG pipelines, and clinical AI products. You will build and improve the systems that retrieve, rank, and present clinical evidence to clinicians. Experience with search, embeddings, RAG, or information retrieval strongly preferred. Safety and quality mindset is essential.',
-    mustHaves: 'Experience with RAG, semantic search, or retrieval systems in production. Understanding of safe and trustworthy AI products. Strong product sense and track record of shipping to real users.',
-    redFlags: 'No experience with retrieval or search. Dismissive of safety concerns. No product sense. Never shipped to real end users.',
-  },
-  {
-    id: 'comms', name: 'Comms',
-    desc: 'AI voice agent and receptionist for patient communications — phone, SMS, scheduling',
-    teamDesc: `Heidi Comms is focused on patient communications workflows for clinics — an AI voice agent and receptionist that handles inbound and outbound communications, scheduling, follow-ups, and integrations with practice systems.`,
-    jd: 'Senior Software Engineer to build AI-powered voice and communications infrastructure. You will work on real-time voice AI, telephony systems, and integrations connecting Comms to clinic systems. Experience with real-time systems, VoIP/telephony, or conversational AI preferred.',
-    mustHaves: 'Experience building real-time or communications systems in production. Strong product sense around reliability. Track record shipping complex backend systems.',
-    redFlags: 'No real-time systems experience. Poor understanding of reliability requirements. No empathy for end users. Only internal tooling experience.',
-  },
-  {
-    id: 'models', name: 'Models',
-    desc: 'AI model platform — fine-tuning, alignment, evaluation, and model R&D',
-    teamDesc: `The Models team researches, evaluates, and deploys the AI models that power Heidi's product. They own model infrastructure, experimentation (offline evaluations, shadow traffic, canary testing), and model R&D (fine-tuning, alignment, reasoning improvements).`,
-    jd: `You will be a Senior AI Model Engineer on the Model Platform team.
-
-What you will do:
-- Lead major research and development projects focused on step-changes in model performance
-- Tackle the most ambiguous technical problems related to model behaviour, alignment, and safety
-- Build cutting-edge fine-tuned LLMs within Heidi
-- Partner with product and medical knowledge teams to build agentic AI and evaluation frameworks
-- Develop novel fine-tuning or data generation techniques for our healthcare domain
-- Mentor junior engineers
-
-What we look for:
-- Proven track record leading projects resulting in significant improvements to large-scale AI models
-- Shipped AI and LLM-powered features to real users in production
-- Expert in Python, PyTorch/TensorFlow, and transformer architecture theory
-- Deep foundations in mathematics and statistics
-- PhD in Computer Science, AI, or related field highly preferred
-
-Bonus: Strong publication record. Experience leading research teams. Expertise in reinforcement learning or data-centric AI.`,
-    mustHaves: 'Production experience deploying and monitoring ML/LLM models. Strong ML fundamentals. Hands-on LLM experience. Track record connecting model improvements to product outcomes.',
-    redFlags: 'Only academic research with nothing shipped. No LLM-specific experience. Cannot connect model work to product outcomes. No experience shipping to real users.',
-  },
+var DEFAULTS = [
+  {id:'orchestration',name:'Orchestration',desc:'Context retrieval, intent routing, memory, tool orchestration',
+   teamDesc:'The Orchestration team builds the connective tissue between all Heidi capabilities. They own context retrieval, intent routing, memory, and tool orchestration — enabling multi-step clinical workflows.',
+   jd:'Staff+ AI scientist/engineer. Own clinician-grade retrieval and QA stack. Build hybrid search (lexical + vector + re-ranking). Design grounding and answer synthesis with source citation. Lead model work across prompting, fine-tuning, and tool use. Stand up gold-standard evaluation with offline IR metrics. Productionize services with observability. Set data governance for medical content. Partner with clinicians on intents and acceptance criteria. Requirements: staff-level track record shipping search/NLP/LLM at scale, strong Python, depth in RAG and embeddings, MLOps, rigorous evaluation design, safety thinking.',
+   mustHaves:'Production experience shipping search, NLP, or LLM systems to real users at scale. Hands-on RAG or hybrid retrieval. Strong Python and software engineering. Rigorous evaluation approach.',
+   redFlags:'Only academic background with nothing shipped. No retrieval or search experience. Weak on evaluation. No safety awareness. No product sense.'},
+  {id:'evidence',name:'Evidence',desc:'Citation-backed clinical evidence from trusted medical sources',
+   teamDesc:'The Evidence team builds Heidi Evidence — citation-backed answers from trusted medical sources (guidelines, journals, medicines references) with transparent source attribution.',
+   jd:'Senior Software Engineer focused on retrieval systems, RAG pipelines, and clinical AI. Build and improve systems that retrieve, rank, and present clinical evidence. Experience with search, embeddings, RAG strongly preferred. Safety and quality mindset essential.',
+   mustHaves:'Experience with RAG, semantic search, or retrieval in production. Understanding of safe and trustworthy AI. Strong product sense and track record shipping to real users.',
+   redFlags:'No retrieval or search experience. Dismissive of safety concerns. No product sense. Never shipped to real end users.'},
+  {id:'comms',name:'Comms',desc:'AI voice agent for patient communications — phone, SMS, scheduling',
+   teamDesc:'Heidi Comms is an AI voice agent and receptionist for clinic patient communications — inbound and outbound calls, SMS, scheduling, follow-ups, and EHR integrations.',
+   jd:'Senior Software Engineer to build AI-powered voice and communications infrastructure. Work on real-time voice AI, telephony, and clinic system integrations. Own reliability, latency, and quality. Experience with real-time systems, VoIP, or conversational AI preferred.',
+   mustHaves:'Experience building real-time or communications systems in production. Strong product sense around reliability. Track record shipping complex backend systems.',
+   redFlags:'No real-time systems experience. Poor understanding of reliability requirements. No empathy for end users. Only internal tooling.'},
+  {id:'models',name:'Models',desc:'AI model platform — fine-tuning, alignment, evaluation, R&D',
+   teamDesc:'The Models team researches, evaluates, and deploys AI models powering Heidi. They own model infrastructure, experimentation, and model R&D including fine-tuning, alignment, and reasoning improvements.',
+   jd:'Senior AI Model Engineer. Lead R&D for step-changes in model performance. Tackle model behaviour, alignment, and safety. Build fine-tuned LLMs. Create evaluation frameworks. Develop novel techniques for healthcare. Mentor junior engineers. Requirements: track record improving large-scale AI models, shipped LLM features to production, expert Python and PyTorch, strong ML and stats foundations. PhD preferred.',
+   mustHaves:'Production experience deploying and monitoring ML/LLM models. Strong ML fundamentals. Hands-on LLM experience. Track record connecting model improvements to product outcomes.',
+   redFlags:'Only academic research. No LLM experience. Cannot connect model work to product outcomes. No experience shipping to real users.'}
 ];
 
-// ── STATE ──────────────────────────────────────────────
-let selectedPresetId = null;
-let selectedJDType = 'team';
-let selectedCandidate = null;
-let activeTab = 'search';
-let editingPresetId = null;
-let searchTimer = null;
-let searchData = [];
-let highlightIdx = -1;
+var selPreset = null;
+var selJD = 'team';
+var selCandidate = null;
+var activeTab = 'search';
+var editId = null;
+var searchTimer = null;
+var searchData = [];
 
-// ── STORAGE ────────────────────────────────────────────
-function getPresets() {
-  const s = localStorage.getItem('hh_presets_v3');
-  return s ? JSON.parse(s) : DEFAULT_PRESETS;
-}
-function savePresets(p) { localStorage.setItem('hh_presets_v3', JSON.stringify(p)); }
-function getKeys() {
-  return { ashby: localStorage.getItem('hh_ashby') || '', openai: localStorage.getItem('hh_openai') || '' };
-}
+function gp(){try{var s=localStorage.getItem('hhp5');return s?JSON.parse(s):DEFAULTS;}catch(e){return DEFAULTS;}}
+function sp(p){localStorage.setItem('hhp5',JSON.stringify(p));}
+function gk(){return{ashby:localStorage.getItem('hha')||'',openai:localStorage.getItem('hho')||''};}
 
-// ── SETTINGS ───────────────────────────────────────────
-function openSettings() {
-  const k = getKeys();
-  document.getElementById('ashbyKey').value = k.ashby;
-  document.getElementById('openaiKey').value = k.openai;
-  renderSettingsPresets();
+function openSettings(){
+  var k=gk();
+  document.getElementById('ashbyKey').value=k.ashby;
+  document.getElementById('openaiKey').value=k.openai;
+  renderPList();
   document.getElementById('settingsModal').classList.add('open');
 }
-function closeSettings() {
+function closeSettings(){
   document.getElementById('settingsModal').classList.remove('open');
-  renderPresetGrid();
+  renderGrid();
 }
-function saveKeys() {
-  localStorage.setItem('hh_ashby', document.getElementById('ashbyKey').value.trim());
-  localStorage.setItem('hh_openai', document.getElementById('openaiKey').value.trim());
-  const m = document.getElementById('savedMsg');
-  m.style.display = 'inline';
-  setTimeout(() => m.style.display = 'none', 2000);
+function saveKeys(){
+  localStorage.setItem('hha',document.getElementById('ashbyKey').value.trim());
+  localStorage.setItem('hho',document.getElementById('openaiKey').value.trim());
+  var m=document.getElementById('savedMsg');
+  m.style.display='inline';
+  setTimeout(function(){m.style.display='none';},2000);
 }
-function toggleVis(id) {
-  const el = document.getElementById(id);
-  el.type = el.type === 'password' ? 'text' : 'password';
-}
+function tv(id){var el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
 
-// ── PRESETS ────────────────────────────────────────────
-function renderPresetGrid() {
-  const presets = getPresets();
-  const grid = document.getElementById('presetGrid');
-  if (!presets.length) {
-    grid.innerHTML = '<p style="color:#86868b;font-size:14px">No presets yet — open Settings to add a team</p>';
-    return;
-  }
-  grid.innerHTML = presets.map(p => `
-    <div class="preset-card ${selectedPresetId === p.id ? 'selected' : ''}" onclick="selectPreset('${p.id}')">
-      <div class="selected-badge">✓</div>
-      <div class="preset-name">${p.name}</div>
-      <div class="preset-desc">${p.desc || ''}</div>
-    </div>
-  `).join('');
-  renderJDSelector();
-}
-
-function selectPreset(id) {
-  selectedPresetId = id;
-  selectedJDType = 'team';
-  renderPresetGrid();
-}
-
-function renderJDSelector() {
-  const wrap = document.getElementById('jdSelectorWrap');
-  const list = document.getElementById('jdOptionsList');
-  if (!selectedPresetId) { wrap.style.display = 'none'; return; }
-  const preset = getPresets().find(p => p.id === selectedPresetId);
-  if (!preset) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  const options = [
-    { id: 'team', name: preset.name + ' team JD', desc: 'Evaluate against the specific JD for this team' },
-    { id: 'applied_ai', name: 'Generic Applied AI Engineer JD', desc: 'Use the shared applied AI JD across any team' },
-    { id: 'both', name: 'Both JDs', desc: 'Score against both and see each result separately' },
-  ];
-  list.innerHTML = options.map(o => `
-    <div class="jd-option ${selectedJDType === o.id ? 'selected' : ''}" onclick="selectJD('${o.id}')">
-      <div class="radio-dot"></div>
-      <div><div class="jd-name">${o.name}</div><div class="jd-desc">${o.desc}</div></div>
-    </div>
-  `).join('');
-}
-
-function selectJD(type) { selectedJDType = type; renderJDSelector(); }
-
-function renderSettingsPresets() {
-  const presets = getPresets();
-  const list = document.getElementById('settingsPresetList');
-  if (!presets.length) { list.innerHTML = '<p style="color:#86868b;font-size:13px">No presets yet</p>'; return; }
-  list.innerHTML = presets.map(p => `
-    <div class="preset-list-item">
-      <div>
-        <div style="font-size:14px;font-weight:500">${p.name}</div>
-        <div style="font-size:12px;color:#86868b;margin-top:2px">${(p.desc||'').substring(0,60)}</div>
-      </div>
-      <button class="btn-secondary" style="font-size:12px;padding:6px 12px;flex-shrink:0;margin-left:12px" onclick="openEditPreset('${p.id}')">Edit</button>
-    </div>
-  `).join('');
-}
-
-function openAddPreset() {
-  editingPresetId = null;
-  document.getElementById('presetModalTitle').textContent = 'Add team preset';
-  ['pName','pDesc','pJD','pMust','pFlags'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('deletePBtn').style.display = 'none';
-  document.getElementById('presetErr').style.display = 'none';
-  document.getElementById('presetModal').classList.add('open');
-}
-
-function openEditPreset(id) {
-  const p = getPresets().find(x => x.id === id);
-  if (!p) return;
-  editingPresetId = id;
-  document.getElementById('presetModalTitle').textContent = 'Edit: ' + p.name;
-  document.getElementById('pName').value = p.name || '';
-  document.getElementById('pDesc').value = p.desc || '';
-  document.getElementById('pJD').value = p.jd || '';
-  document.getElementById('pMust').value = p.mustHaves || '';
-  document.getElementById('pFlags').value = p.redFlags || '';
-  document.getElementById('deletePBtn').style.display = 'block';
-  document.getElementById('presetErr').style.display = 'none';
-  document.getElementById('presetModal').classList.add('open');
-}
-
-function closePresetModal() { document.getElementById('presetModal').classList.remove('open'); }
-
-function savePreset() {
-  const name = document.getElementById('pName').value.trim();
-  const desc = document.getElementById('pDesc').value.trim();
-  const jd = document.getElementById('pJD').value.trim();
-  const mustHaves = document.getElementById('pMust').value.trim();
-  const redFlags = document.getElementById('pFlags').value.trim();
-  if (!name || !jd) {
-    const e = document.getElementById('presetErr');
-    e.innerHTML = '<div class="alert alert-error">Team name and JD are required</div>';
-    e.style.display = 'block';
-    return;
-  }
-  const presets = getPresets();
-  if (editingPresetId) {
-    const i = presets.findIndex(p => p.id === editingPresetId);
-    if (i !== -1) presets[i] = { ...presets[i], name, desc, teamDesc: desc, jd, mustHaves, redFlags };
-  } else {
-    presets.push({ id: Date.now().toString(), name, desc, teamDesc: desc, jd, mustHaves, redFlags });
-  }
-  savePresets(presets);
-  closePresetModal();
-  renderSettingsPresets();
-  renderPresetGrid();
-}
-
-function deletePreset() {
-  if (!editingPresetId || !confirm('Delete this preset?')) return;
-  const presets = getPresets().filter(p => p.id !== editingPresetId);
-  savePresets(presets);
-  if (selectedPresetId === editingPresetId) { selectedPresetId = null; document.getElementById('jdSelectorWrap').style.display = 'none'; }
-  closePresetModal();
-  renderSettingsPresets();
-  renderPresetGrid();
-}
-
-// ── TABS ───────────────────────────────────────────────
-function switchTab(tab) {
-  activeTab = tab;
-  document.getElementById('tabSearch').classList.toggle('active', tab === 'search');
-  document.getElementById('tabLink').classList.toggle('active', tab === 'link');
-  document.getElementById('panelSearch').style.display = tab === 'search' ? 'block' : 'none';
-  document.getElementById('panelLink').style.display = tab === 'link' ? 'block' : 'none';
-  selectedCandidate = null;
-  document.getElementById('selectedBox').style.display = 'none';
-  document.getElementById('searchResults').style.display = 'none';
-}
-
-// ── SEARCH ─────────────────────────────────────────────
-function onSearchType() {
-  clearTimeout(searchTimer);
-  const val = document.getElementById('searchInput').value.trim();
-  if (val.length < 2) { document.getElementById('searchResults').style.display = 'none'; return; }
-  searchTimer = setTimeout(doSearch, 600);
-}
-
-function onSearchKey(e) {
-  const box = document.getElementById('searchResults');
-  if (box.style.display === 'none') return;
-  if (e.key === 'ArrowDown') { e.preventDefault(); highlightIdx = Math.min(highlightIdx+1, searchData.length-1); applyHighlight(); }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); highlightIdx = Math.max(highlightIdx-1, 0); applyHighlight(); }
-  else if (e.key === 'Enter' && highlightIdx >= 0) { e.preventDefault(); pickResult(searchData[highlightIdx]); }
-  else if (e.key === 'Escape') { box.style.display = 'none'; }
-}
-
-function applyHighlight() {
-  document.querySelectorAll('.search-result-item').forEach((el,i) => el.classList.toggle('highlighted', i === highlightIdx));
-}
-
-async function doSearch() {
-  const query = document.getElementById('searchInput').value.trim();
-  if (!query) return;
-  const keys = getKeys();
-  if (!keys.ashby) { showSearchMsg('Add your Ashby API key in Settings first'); return; }
-  const btn = document.getElementById('searchBtn');
-  btn.disabled = true;
-  btn.textContent = 'Searching…';
-  showSearchMsg('<span class="mini-spinner"></span> Searching Ashby…');
-  try {
-    const q = query.toLowerCase();
-    let allCandidates = [];
-    let cursor = null;
-    let pages = 0;
-
-    do {
-      const body = cursor ? { cursor } : {};
-      const data = await ashbyCall('/candidate.list', body);
-      const results = data.results || [];
-      allCandidates = allCandidates.concat(results);
-      cursor = data.nextCursor || null;
-      pages++;
-
-      const found = allCandidates.filter(c => (c.name || '').toLowerCase().includes(q));
-      if (found.length >= 8 || !cursor || pages >= 5) {
-        searchData = found.slice(0, 8);
-        break;
-      }
-    } while (cursor);
-
-    highlightIdx = -1;
-    if (!searchData.length) { showSearchMsg('No candidates found for "' + query + '"'); btn.disabled = false; btn.textContent = 'Search'; return; }
-    renderSearchResults();
-  } catch(err) {
-    showSearchMsg('Error: ' + err.message);
-  }
-  btn.disabled = false;
-  btn.textContent = 'Search';
-}
-
-function showSearchMsg(html) {
-  const box = document.getElementById('searchResults');
-  box.innerHTML = '<div class="search-msg">' + html + '</div>';
-  box.style.display = 'block';
-}
-
-function renderSearchResults() {
-  const box = document.getElementById('searchResults');
-  box.innerHTML = searchData.map(c => {
-    const initials = getInitials(c.name || '?');
-    const appId = (c.applicationIds || [])[0] || '';
-    const role = 'Candidate';
-    const safeData = JSON.stringify({ id: c.id, applicationId: appId, name: c.name, role, stage: '', email: c.primaryEmailAddress?.value || '' });
-    return `<div class="search-result-item" onclick='pickResult(${safeData.replace(/'/g,"&#39;")})'>
-      <div class="avatar">${initials}</div>
-      <div class="result-info">
-        <div class="result-name">${c.name || 'Unknown'}</div>
-        <div class="result-meta">${c.position || ''}${c.company ? ' · ' + c.company : ''}${c.primaryEmailAddress?.value ? ' · ' + c.primaryEmailAddress.value : ''}</div>
-      </div>
-    </div>`;
+function renderGrid(){
+  var presets=gp();
+  var g=document.getElementById('presetGrid');
+  if(!presets.length){g.innerHTML='<p style="color:#86868b;font-size:14px">No presets — open Settings to add a team</p>';return;}
+  g.innerHTML=presets.map(function(p){
+    return '<div class="pcard'+(selPreset===p.id?' sel':'')+'" onclick="selP(\''+p.id+'\')">'
+      +'<div class="badge">✓</div>'
+      +'<div class="pname">'+p.name+'</div>'
+      +'<div class="pdesc">'+p.desc+'</div>'
+      +'</div>';
   }).join('');
-  box.style.display = 'block';
+  renderJD();
 }
 
-function pickResult(candidate) {
-  if (typeof candidate === 'string') candidate = JSON.parse(candidate);
-  selectedCandidate = candidate;
-  document.getElementById('searchResults').style.display = 'none';
-  document.getElementById('searchInput').value = '';
-  const initials = getInitials(candidate.name || '?');
-  const box = document.getElementById('selectedBox');
-  box.innerHTML = `<div class="selected-candidate-box">
-    <div class="avatar" style="width:40px;height:40px;font-size:15px">${initials}</div>
-    <div class="info">
-      <div class="cname">${candidate.name}</div>
-      <div class="cmeta">${candidate.applicationId ? '✓ Application found' : 'No application ID'}</div>
-    </div>
-    <button class="clear-btn" onclick="clearCandidate()">✕</button>
-  </div>`;
-  box.style.display = 'block';
+function selP(id){selPreset=id;selJD='team';renderGrid();}
+
+function renderJD(){
+  var w=document.getElementById('jdWrap');
+  if(!selPreset){w.style.display='none';return;}
+  var p=gp().find(function(x){return x.id===selPreset;});
+  if(!p){w.style.display='none';return;}
+  w.style.display='block';
+  var opts=[
+    {id:'team',name:p.name+' Team JD',desc:'Evaluate against the specific JD for this team'},
+    {id:'ai',name:'Generic Applied AI Engineer JD',desc:'Use the shared AI JD across any team'},
+    {id:'both',name:'Both JDs',desc:'Score against both and compare'}
+  ];
+  document.getElementById('jdList').innerHTML=opts.map(function(o){
+    return '<div class="jdopt'+(selJD===o.id?' sel':'')+'" onclick="selJDType(\''+o.id+'\')">'
+      +'<div class="rdot"></div>'
+      +'<div><div class="jdname">'+o.name+'</div><div class="jddesc">'+o.desc+'</div></div>'
+      +'</div>';
+  }).join('');
 }
 
-function clearCandidate() {
-  selectedCandidate = null;
-  document.getElementById('selectedBox').style.display = 'none';
+function selJDType(t){selJD=t;renderJD();}
+
+function renderPList(){
+  var presets=gp();
+  var l=document.getElementById('presetList');
+  if(!presets.length){l.innerHTML='<p style="color:#86868b;font-size:13px">No presets yet</p>';return;}
+  l.innerHTML=presets.map(function(p){
+    return '<div class="pli">'
+      +'<div><div style="font-size:14px;font-weight:500">'+p.name+'</div>'
+      +'<div style="font-size:12px;color:#86868b;margin-top:2px">'+p.desc.substring(0,60)+'</div></div>'
+      +'<button class="bsec" style="font-size:12px;padding:6px 12px;flex-shrink:0;margin-left:12px" onclick="openEdit(\''+p.id+'\')">Edit</button>'
+      +'</div>';
+  }).join('');
 }
 
-function getInitials(name) {
-  return name.split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');
+function openAdd(){
+  editId=null;
+  document.getElementById('pModalTitle').textContent='Add team preset';
+  ['pName','pDesc','pJD','pMust','pFlags'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('pDelBtn').style.display='none';
+  document.getElementById('pErr').style.display='none';
+  document.getElementById('presetModal').classList.add('open');
 }
 
-// ── ASHBY API ──────────────────────────────────────────
-async function ashbyCall(endpoint, body) {
-  const keys = getKeys();
-  const res = await fetch(PROXY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ endpoint, body: body || {}, ashbyKey: keys.ashby }),
-  });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error('Proxy error ' + res.status + ': ' + t.substring(0,150));
+function openEdit(id){
+  var p=gp().find(function(x){return x.id===id;});
+  if(!p)return;
+  editId=id;
+  document.getElementById('pModalTitle').textContent='Edit: '+p.name;
+  document.getElementById('pName').value=p.name||'';
+  document.getElementById('pDesc').value=p.desc||'';
+  document.getElementById('pJD').value=p.jd||'';
+  document.getElementById('pMust').value=p.mustHaves||'';
+  document.getElementById('pFlags').value=p.redFlags||'';
+  document.getElementById('pDelBtn').style.display='block';
+  document.getElementById('pErr').style.display='none';
+  document.getElementById('presetModal').classList.add('open');
+}
+
+function closePreset(){document.getElementById('presetModal').classList.remove('open');}
+
+function savePreset(){
+  var name=document.getElementById('pName').value.trim();
+  var desc=document.getElementById('pDesc').value.trim();
+  var jd=document.getElementById('pJD').value.trim();
+  var must=document.getElementById('pMust').value.trim();
+  var flags=document.getElementById('pFlags').value.trim();
+  if(!name||!jd){
+    var e=document.getElementById('pErr');
+    e.innerHTML='<div class="alert aerror">Team name and JD are required</div>';
+    e.style.display='block';
+    return;
   }
-  const data = await res.json();
-  if (data.errors && data.errors.length > 0) {
-    const firstErr = data.errors[0];
-    const msg = typeof firstErr === 'string' ? firstErr : (firstErr.message || JSON.stringify(firstErr));
-    throw new Error('Ashby: ' + msg);
+  var presets=gp();
+  if(editId){
+    var i=presets.findIndex(function(p){return p.id===editId;});
+    if(i!==-1)presets[i]=Object.assign({},presets[i],{name:name,desc:desc,teamDesc:desc,jd:jd,mustHaves:must,redFlags:flags});
+  } else {
+    presets.push({id:Date.now().toString(),name:name,desc:desc,teamDesc:desc,jd:jd,mustHaves:must,redFlags:flags});
+  }
+  sp(presets);
+  closePreset();
+  renderPList();
+  renderGrid();
+}
+
+function delPreset(){
+  if(!editId||!confirm('Delete this preset?'))return;
+  var presets=gp().filter(function(p){return p.id!==editId;});
+  sp(presets);
+  if(selPreset===editId){selPreset=null;document.getElementById('jdWrap').style.display='none';}
+  closePreset();
+  renderPList();
+  renderGrid();
+}
+
+function switchTab(tab){
+  activeTab=tab;
+  document.getElementById('tabSearch').classList.toggle('active',tab==='search');
+  document.getElementById('tabLink').classList.toggle('active',tab==='link');
+  document.getElementById('panelSearch').style.display=tab==='search'?'block':'none';
+  document.getElementById('panelLink').style.display=tab==='link'?'block':'none';
+  selCandidate=null;
+  document.getElementById('selBox').style.display='none';
+  document.getElementById('searchResults').style.display='none';
+}
+
+function onType(){
+  clearTimeout(searchTimer);
+  var v=document.getElementById('searchInput').value.trim();
+  if(v.length<2){document.getElementById('searchResults').style.display='none';return;}
+  searchTimer=setTimeout(doSearch,600);
+}
+
+async function doSearch(){
+  var query=document.getElementById('searchInput').value.trim();
+  if(!query)return;
+  var k=gk();
+  if(!k.ashby){showMsg('Add your Ashby API key in Settings first');return;}
+  var btn=document.getElementById('searchBtn');
+  btn.disabled=true;btn.textContent='Searching…';
+  showMsg('<span class="mspinner"></span>Searching Ashby…');
+  try{
+    var q=query.toLowerCase();
+    var found=[];
+    var cursor=null;
+    var pages=0;
+    do{
+      var body=cursor?{cursor:cursor}:{};
+      var data=await ashbyCall('/candidate.list',body);
+      var results=data.results||[];
+      var matches=results.filter(function(c){return (c.name||'').toLowerCase().indexOf(q)!==-1;});
+      found=found.concat(matches);
+      cursor=data.nextCursor||null;
+      pages++;
+      if(found.length>=8||pages>=8)break;
+    } while(cursor);
+    searchData=found.slice(0,8);
+    if(!searchData.length){showMsg('No candidates found for "'+query+'"');btn.disabled=false;btn.textContent='Search';return;}
+    renderResults();
+  } catch(err){
+    showMsg('Error: '+err.message);
+  }
+  btn.disabled=false;btn.textContent='Search';
+}
+
+function showMsg(html){
+  var b=document.getElementById('searchResults');
+  b.innerHTML='<div class="smsg">'+html+'</div>';
+  b.style.display='block';
+}
+
+function renderResults(){
+  var b=document.getElementById('searchResults');
+  b.innerHTML=searchData.map(function(c){
+    var ini=initials(c.name||'?');
+    var appId=(c.applicationIds||[])[0]||'';
+    var d=JSON.stringify({id:c.id,appId:appId,name:c.name,pos:c.position||'',company:c.company||'',email:(c.primaryEmailAddress&&c.primaryEmailAddress.value)||''});
+    return '<div class="sri" onclick=\'pick('+d.replace(/'/g,"&#39;")+')\' >'
+      +'<div class="av">'+ini+'</div>'
+      +'<div><div class="rname">'+(c.name||'Unknown')+'</div>'
+      +'<div class="rmeta">'+(c.position||'')+(c.company?' · '+c.company:'')+'</div></div>'
+      +'</div>';
+  }).join('');
+  b.style.display='block';
+}
+
+function pick(c){
+  if(typeof c==='string')c=JSON.parse(c);
+  selCandidate=c;
+  document.getElementById('searchResults').style.display='none';
+  document.getElementById('searchInput').value='';
+  var ini=initials(c.name||'?');
+  var b=document.getElementById('selBox');
+  b.innerHTML='<div class="selbox">'
+    +'<div class="av" style="width:40px;height:40px;font-size:15px">'+ini+'</div>'
+    +'<div class="selbox-info">'
+    +'<div class="selbox-name">'+c.name+'</div>'
+    +'<div class="selbox-meta">'+(c.appId?'✓ Application found':'No application ID — will search')+'</div>'
+    +'</div>'
+    +'<button class="clearbtn" onclick="clearSel()">✕</button>'
+    +'</div>';
+  b.style.display='block';
+}
+
+function clearSel(){selCandidate=null;document.getElementById('selBox').style.display='none';}
+
+function initials(n){return n.split(' ').filter(Boolean).slice(0,2).map(function(w){return w[0].toUpperCase();}).join('');}
+
+async function ashbyCall(endpoint,body){
+  var k=gk();
+  var res=await fetch(PROXY,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({endpoint:endpoint,body:body||{},ashbyKey:k.ashby})
+  });
+  if(!res.ok){var t=await res.text();throw new Error('Proxy error '+res.status+': '+t.substring(0,150));}
+  var data=await res.json();
+  if(data.errors&&data.errors.length){
+    var e=data.errors[0];
+    throw new Error('Ashby: '+(typeof e==='string'?e:(e.message||e.code||JSON.stringify(e))));
   }
   return data;
 }
 
-function parseLink(input) {
-  input = input.trim();
-  // Try application ID first
-  const appMatch = input.match(/applications\/([a-f0-9-]{36})/i);
-  if (appMatch) return { type: 'application', id: appMatch[1] };
-  // Try candidate ID
-  const candMatch = input.match(/candidates\/([a-f0-9-]{36})/i);
-  if (candMatch) return { type: 'candidate', id: candMatch[1] };
-  // Bare UUID - treat as candidate ID since application IDs rarely get pasted alone
-  const uuidMatch = input.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i);
-  if (uuidMatch) return { type: 'candidate', id: uuidMatch[1] };
+function parseLink(s){
+  s=s.trim();
+  var m;
+  m=s.match(/applications\/([a-f0-9-]{36})/i);if(m)return{type:'application',id:m[1]};
+  m=s.match(/candidates\/([a-f0-9-]{36})/i);if(m)return{type:'candidate',id:m[1]};
+  m=s.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i);if(m)return{type:'candidate',id:m[1]};
   return null;
 }
 
-async function fetchData() {
-  let applicationId = null;
-  let candidateId = null;
-
-  if (activeTab === 'search') {
-    if (!selectedCandidate) throw new Error('No candidate selected');
-    if (selectedCandidate.applicationId) {
-      applicationId = selectedCandidate.applicationId;
-  } else {
-    const linkVal = document.getElementById('linkInput').value.trim();
-    if (!linkVal) throw new Error('Please paste an Ashby link');
-    const parsed = parseLink(linkVal);
-    if (!parsed) throw new Error('Could not find a valid ID in that link — paste the full URL from Ashby');
-    // Always resolve via candidate to be safe
-    candidateId = parsed.type === 'candidate' ? parsed.id : null;
-    if (parsed.type === 'application') {
-      applicationId = parsed.id;
+async function fetchData(){
+  var appId=null,candId=null;
+  if(activeTab==='search'){
+    if(!selCandidate)throw new Error('No candidate selected');
+    if(selCandidate.appId){
+      appId=selCandidate.appId;
     } else {
+      candId=selCandidate.id;
       setStep('Finding applications…');
-      const r = await ashbyCall('/application.list', { candidateId: parsed.id });
-      const apps = r.results || [];
-      if (!apps.length) throw new Error('No applications found for this candidate');
-      applicationId = apps[0].id;
+      var r=await ashbyCall('/application.list',{candidateId:candId});
+      var apps=r.results||[];
+      if(!apps.length)throw new Error('No applications found for this candidate in Ashby');
+      appId=apps[0].id;
+    }
+  } else {
+    var lv=document.getElementById('linkInput').value.trim();
+    if(!lv)throw new Error('Please paste an Ashby link');
+    var parsed=parseLink(lv);
+    if(!parsed)throw new Error('Could not find a valid ID in that link — paste the full URL from Ashby');
+    if(parsed.type==='application'){
+      appId=parsed.id;
+    } else {
+      candId=parsed.id;
+      setStep('Finding applications…');
+      var r2=await ashbyCall('/application.list',{candidateId:candId});
+      var apps2=r2.results||[];
+      if(!apps2.length)throw new Error('No applications found for this candidate');
+      appId=apps2[0].id;
     }
   }
 
   setStep('Fetching application…');
-  const appRes = await ashbyCall('/application.info', { id: applicationId });
-  const application = appRes.results;
-  if (!application) throw new Error('Application not found');
+  var ar=await ashbyCall('/application.info',{id:appId});
+  var app=ar.results;
+  if(!app)throw new Error('Application not found — check the link or ID');
 
-  candidateId = candidateId || application.candidate?.id;
-  const jobId = application.job?.id;
+  candId=candId||app.candidate&&app.candidate.id;
+  var jobId=app.job&&app.job.id;
 
   setStep('Fetching profile, job and interview notes…');
-  const [candRes, jobRes, feedbackRes] = await Promise.all([
-    candidateId ? ashbyCall('/candidate.info', { id: candidateId }) : Promise.resolve({ results: {} }),
-    jobId ? ashbyCall('/job.info', { id: jobId }) : Promise.resolve({ results: {} }),
-    ashbyCall('/applicationFeedback.list', { applicationId }),
+  var results=await Promise.all([
+    candId?ashbyCall('/candidate.info',{id:candId}):Promise.resolve({results:{}}),
+    jobId?ashbyCall('/job.info',{id:jobId}):Promise.resolve({results:{}}),
+    ashbyCall('/applicationFeedback.list',{applicationId:appId})
   ]);
 
-  return {
-    application,
-    candidate: candRes.results || {},
-    job: jobRes.results || {},
-    feedbacks: feedbackRes.results || [],
-  };
+  return{app:app,candidate:results[0].results||{},job:results[1].results||{},feedbacks:results[2].results||[]};
 }
 
-// ── DATA EXTRACTION ────────────────────────────────────
-function extractProfile(candidate, application) {
-  const lines = [];
-  if (candidate.name) lines.push('Name: ' + candidate.name);
-  if (candidate.primaryEmailAddress?.value) lines.push('Email: ' + candidate.primaryEmailAddress.value);
-  if (candidate.currentTitle) lines.push('Current title: ' + candidate.currentTitle);
-  if (candidate.currentCompany) lines.push('Current company: ' + candidate.currentCompany);
-  if (candidate.position) lines.push('Position: ' + candidate.position);
-  if (candidate.company) lines.push('Company: ' + candidate.company);
-  if (candidate.linkedInUrl) lines.push('LinkedIn: ' + candidate.linkedInUrl);
-  if (application.source?.label) lines.push('Source: ' + application.source.label);
-  if (application.currentInterviewStageName) lines.push('Pipeline stage: ' + application.currentInterviewStageName);
-  const resume = candidate.resumeText || '';
-  if (resume) lines.push('\n--- CV / Resume ---\n' + resume.substring(0, 6000));
-  return lines.join('\n') || 'Limited profile data in Ashby';
+function exProfile(c,app){
+  var lines=[];
+  if(c.name)lines.push('Name: '+c.name);
+  if(c.primaryEmailAddress&&c.primaryEmailAddress.value)lines.push('Email: '+c.primaryEmailAddress.value);
+  if(c.currentTitle)lines.push('Current title: '+c.currentTitle);
+  if(c.currentCompany)lines.push('Current company: '+c.currentCompany);
+  if(c.position)lines.push('Position: '+c.position);
+  if(c.company)lines.push('Company: '+c.company);
+  if(app.source&&app.source.label)lines.push('Source: '+app.source.label);
+  if(app.currentInterviewStageName)lines.push('Pipeline stage: '+app.currentInterviewStageName);
+  if(c.resumeText)lines.push('\n--- CV ---\n'+c.resumeText.substring(0,6000));
+  return lines.join('\n')||'Limited profile data in Ashby';
 }
 
-function extractAnswers(application) {
-  const parts = [];
-  for (const sub of (application.formSubmissions || [])) {
-    for (const ans of (sub.answers || [])) {
-      if (ans.value) parts.push('Q: ' + (ans.label||'Field') + '\nA: ' + ans.value);
-    }
-  }
-  return parts.join('\n\n') || 'No application form answers on record';
+function exAnswers(app){
+  var parts=[];
+  (app.formSubmissions||[]).forEach(function(sub){
+    (sub.answers||[]).forEach(function(a){if(a.value)parts.push('Q: '+(a.label||'Field')+'\nA: '+a.value);});
+  });
+  return parts.join('\n\n')||'No application answers on record';
 }
 
-function extractFeedback(feedbacks) {
-  if (!feedbacks?.length) return 'No interview feedback recorded in Ashby yet';
-  return feedbacks.map(fb => {
-    const who = fb.interviewer?.name || fb.createdBy?.name || 'Unknown interviewer';
-    const stage = fb.interviewStage?.title || fb.interviewStage?.name || 'Unknown stage';
-    const rec = fb.overallRecommendation || 'No recommendation recorded';
-    const date = fb.submittedAt ? new Date(fb.submittedAt).toLocaleDateString() : '';
-    const answers = (fb.feedbackFormAnswers||[]).filter(a=>a.value).map(a=>'  ['+a.label+']: '+a.value).join('\n');
-    const notes = fb.notes || fb.note || '';
-    return ['── ' + who + ' · ' + stage + (date ? ' · '+date : '') + ' ──', 'Overall: ' + rec, answers ? 'Scorecard:\n' + answers : '', notes ? 'Notes: ' + notes : ''].filter(Boolean).join('\n');
+function exFeedback(fbs){
+  if(!fbs||!fbs.length)return'No interview feedback recorded in Ashby yet';
+  return fbs.map(function(fb){
+    var who=(fb.interviewer&&fb.interviewer.name)||(fb.createdBy&&fb.createdBy.name)||'Unknown';
+    var stage=(fb.interviewStage&&(fb.interviewStage.title||fb.interviewStage.name))||'Unknown stage';
+    var rec=fb.overallRecommendation||'No recommendation';
+    var ans=(fb.feedbackFormAnswers||[]).filter(function(a){return a.value;}).map(function(a){return'  ['+a.label+']: '+a.value;}).join('\n');
+    var notes=fb.notes||fb.note||'';
+    return['── '+who+' · '+stage+' ──','Overall: '+rec,ans?'Scorecard:\n'+ans:'',notes?'Notes: '+notes:''].filter(Boolean).join('\n');
   }).join('\n\n');
 }
 
-// ── OPENAI ─────────────────────────────────────────────
-async function callAI(openaiKey, prompt) {
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + openaiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      response_format: { type: 'json_object' },
-      temperature: 0.2,
-      messages: [
-        { role: 'system', content: 'You are an expert hiring advisor. Respond with valid JSON only. No markdown, no code blocks.' },
-        { role: 'user', content: prompt },
-      ],
-    }),
+async function callAI(prompt){
+  var k=gk();
+  var res=await fetch('https://api.openai.com/v1/chat/completions',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+k.openai,'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'gpt-4o',
+      response_format:{type:'json_object'},
+      temperature:0.2,
+      messages:[
+        {role:'system',content:'You are an expert hiring advisor. Respond with valid JSON only.'},
+        {role:'user',content:prompt}
+      ]
+    })
   });
-  if (!res.ok) {
-    if (res.status === 401) throw new Error('Invalid OpenAI API key — check Settings');
-    if (res.status === 429) throw new Error('OpenAI rate limit — wait a moment and try again');
-    const t = await res.text();
-    throw new Error('OpenAI error ' + res.status + ': ' + t.substring(0,150));
+  if(!res.ok){
+    if(res.status===401)throw new Error('Invalid OpenAI API key — check Settings');
+    if(res.status===429)throw new Error('OpenAI rate limit — wait a moment and try again');
+    throw new Error('OpenAI error '+res.status);
   }
-  const data = await res.json();
-  return JSON.parse(data.choices[0].message.content);
+  var d=await res.json();
+  return JSON.parse(d.choices[0].message.content);
 }
 
-function buildPrompt(preset, jdText, jdLabel, profile, answers, feedback, extra) {
-  return `You are a senior talent advisor at Heidi Health, an AI-powered clinical documentation company. Help the TA team make clear evidence-based hire or no-hire decisions. Be direct and specific. Back every claim with evidence. Do not waffle.
-
-TEAM: ${preset.name}
-${preset.teamDesc}
-
-JD BEING EVALUATED AGAINST: ${jdLabel}
-${jdText}
-
-${preset.mustHaves ? 'MUST-HAVES (failure here = no hire):\n' + preset.mustHaves + '\n' : ''}
-${preset.redFlags ? 'RED FLAGS:\n' + preset.redFlags + '\n' : ''}
-
-CANDIDATE PROFILE:
-${profile}
-
-APPLICATION ANSWERS:
-${answers}
-
-INTERVIEW NOTES FROM ASHBY:
-${feedback}
-
-${extra ? 'ADDITIONAL CONTEXT:\n' + extra + '\n' : ''}
-
-Return JSON in exactly this structure:
-{
-  "verdict": "hire" or "no_hire" or "maybe",
-  "confidence": "high" or "medium" or "low",
-  "overall_score": integer 1 to 10,
-  "scores": {
-    "jd_fit": integer 1 to 10,
-    "cv_strength": integer 1 to 10,
-    "interview_signals": integer 1 to 10,
-    "team_fit": integer 1 to 10
-  },
-  "one_liner": "single punchy sentence about this candidate",
-  "reasoning": "4 to 6 sentences referencing specific evidence. Be direct.",
-  "hire_signals": ["specific positive signal", "another signal"],
-  "concerns": ["specific concern", "another concern"],
-  "must_have_check": "Go through each must-have and say whether they meet it",
-  "next_step": "Specific recommended action",
-  "data_gaps": "What is missing, or None if sufficient data available"
+function buildPrompt(preset,jdText,jdLabel,profile,answers,feedback,extra){
+  return'You are a senior talent advisor at Heidi Health, an AI-powered clinical documentation company. Make clear evidence-based hire or no-hire decisions. Be direct and specific. Back every claim with evidence.\n\n'
+    +'TEAM: '+preset.name+'\n'+(preset.teamDesc||'')+'\n\n'
+    +'JD: '+jdLabel+'\n'+jdText+'\n\n'
+    +(preset.mustHaves?'MUST-HAVES (failure = no hire):\n'+preset.mustHaves+'\n\n':'')
+    +(preset.redFlags?'RED FLAGS:\n'+preset.redFlags+'\n\n':'')
+    +'CANDIDATE PROFILE:\n'+profile+'\n\n'
+    +'APPLICATION ANSWERS:\n'+answers+'\n\n'
+    +'INTERVIEW NOTES FROM ASHBY:\n'+feedback+'\n\n'
+    +(extra?'ADDITIONAL CONTEXT:\n'+extra+'\n\n':'')
+    +'Return JSON:\n'
+    +'{\n'
+    +'"verdict":"hire" or "no_hire" or "maybe",\n'
+    +'"confidence":"high" or "medium" or "low",\n'
+    +'"overall_score":integer 1-10,\n'
+    +'"scores":{"jd_fit":integer,"cv_strength":integer,"interview_signals":integer,"team_fit":integer},\n'
+    +'"one_liner":"punchy single sentence about this candidate",\n'
+    +'"reasoning":"4-6 sentences with specific evidence",\n'
+    +'"hire_signals":["signal","signal"],\n'
+    +'"concerns":["concern","concern"],\n'
+    +'"must_have_check":"go through each must-have",\n'
+    +'"next_step":"specific recommended action",\n'
+    +'"data_gaps":"what is missing or None"\n'
+    +'}\n\n'
+    +'Rules: interview_signals=5 if no notes yet. confidence=low if no interview notes. Name specific companies and technologies from background. Do not invent information.';
 }
 
-Rules: interview_signals should be 5 if no interview notes yet. Confidence should be low if no interview notes. Name specific technologies and companies from their background. Do not invent information.`;
-}
+async function runReview(){
+  var k=gk();
+  var extra=document.getElementById('extraCtx').value.trim();
+  var errors=[];
+  if(!k.ashby)errors.push('Ashby API key not set — open Settings ⚙️');
+  if(!k.openai)errors.push('OpenAI API key not set — open Settings ⚙️');
+  if(!selPreset)errors.push('Please select a team in Step 1');
+  if(activeTab==='search'&&!selCandidate)errors.push('Please search and select a candidate in Step 2');
+  if(activeTab==='link'&&!document.getElementById('linkInput').value.trim())errors.push('Please paste an Ashby link in Step 2');
 
-// ── MAIN REVIEW ────────────────────────────────────────
-async function runReview() {
-  const keys = getKeys();
-  const extra = document.getElementById('extraContext').value.trim();
-  const errors = [];
-  if (!keys.ashby) errors.push('Ashby API key not set — open Settings ⚙️');
-  if (!keys.openai) errors.push('OpenAI API key not set — open Settings ⚙️');
-  if (!selectedPresetId) errors.push('Please select a team in Step 1');
-  if (activeTab === 'search' && !selectedCandidate) errors.push('Please search and select a candidate in Step 2');
-  if (activeTab === 'link' && !document.getElementById('linkInput').value.trim()) errors.push('Please paste an Ashby link in Step 2');
-
-  const errBox = document.getElementById('errorBox');
-  if (errors.length) {
-    errBox.innerHTML = '<div class="alert alert-error">' + errors.join('<br>') + '</div>';
-    errBox.style.display = 'block';
-    errBox.scrollIntoView({ behavior: 'smooth' });
+  var eb=document.getElementById('errBox');
+  if(errors.length){
+    eb.innerHTML='<div class="alert aerror">'+errors.join('<br>')+'</div>';
+    eb.style.display='block';
+    eb.scrollIntoView({behavior:'smooth'});
     return;
   }
-  errBox.style.display = 'none';
+  eb.style.display='none';
 
-  const preset = getPresets().find(p => p.id === selectedPresetId);
-  if (!preset) return;
+  var preset=gp().find(function(p){return p.id===selPreset;});
+  if(!preset)return;
 
-  document.getElementById('runBtn').disabled = true;
-  document.getElementById('loadingCard').style.display = 'block';
-  document.getElementById('resultsArea').innerHTML = '';
-  document.getElementById('loadingCard').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('runBtn').disabled=true;
+  document.getElementById('loadCard').style.display='block';
+  document.getElementById('resultsArea').innerHTML='';
+  document.getElementById('loadCard').scrollIntoView({behavior:'smooth'});
 
-  try {
+  try{
     setStep('Connecting to Ashby…');
-    const { application, candidate, job, feedbacks } = await fetchData();
-    const candidateName = candidate.name || selectedCandidate?.name || 'Candidate';
-    const roleName = job.title || application.job?.title || preset.name;
-    const profile = extractProfile(candidate, application);
-    const answers = extractAnswers(application);
-    const feedback = extractFeedback(feedbacks);
+    var d=await fetchData();
+    var cname=(d.candidate&&d.candidate.name)||selCandidate&&selCandidate.name||'Candidate';
+    var rname=(d.job&&d.job.title)||(d.app&&d.app.job&&d.app.job.title)||preset.name;
+    var profile=exProfile(d.candidate,d.app);
+    var answers=exAnswers(d.app);
+    var feedback=exFeedback(d.feedbacks);
 
     setStep('Running AI analysis…');
-    let html = '';
+    var html='';
 
-    if (selectedJDType === 'both') {
+    if(selJD==='both'){
       setStep('Analysing against both JDs…');
-      const [r1, r2] = await Promise.all([
-        callAI(keys.openai, buildPrompt(preset, preset.jd, preset.name + ' Team JD', profile, answers, feedback, extra)),
-        callAI(keys.openai, buildPrompt(preset, APPLIED_AI_JD, 'Generic Applied AI Engineer JD', profile, answers, feedback, extra)),
+      var both=await Promise.all([
+        callAI(buildPrompt(preset,preset.jd,preset.name+' Team JD',profile,answers,feedback,extra)),
+        callAI(buildPrompt(preset,AI_JD,'Generic Applied AI Engineer JD',profile,answers,feedback,extra))
       ]);
-      html = renderResult(r1, candidateName, roleName, preset.name + ' Team JD') +
-             renderResult(r2, candidateName, roleName, 'Generic Applied AI Engineer JD');
+      html=renderResult(both[0],cname,rname,preset.name+' Team JD')+renderResult(both[1],cname,rname,'Generic Applied AI Engineer JD');
     } else {
-      const jdText = selectedJDType === 'applied_ai' ? APPLIED_AI_JD : preset.jd;
-      const jdLabel = selectedJDType === 'applied_ai' ? 'Generic Applied AI Engineer JD' : preset.name + ' Team JD';
-      const result = await callAI(keys.openai, buildPrompt(preset, jdText, jdLabel, profile, answers, feedback, extra));
-      html = renderResult(result, candidateName, roleName, jdLabel);
+      var jdText=selJD==='ai'?AI_JD:preset.jd;
+      var jdLabel=selJD==='ai'?'Generic Applied AI Engineer JD':preset.name+' Team JD';
+      var r=await callAI(buildPrompt(preset,jdText,jdLabel,profile,answers,feedback,extra));
+      html=renderResult(r,cname,rname,jdLabel);
     }
 
-    document.getElementById('resultsArea').innerHTML = html;
-    document.getElementById('resultsArea').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('resultsArea').innerHTML=html;
+    document.getElementById('resultsArea').scrollIntoView({behavior:'smooth'});
 
-  } catch(err) {
-    document.getElementById('errorBox').innerHTML = '<div class="alert alert-error"><strong>Error:</strong> ' + err.message + '</div>';
-    document.getElementById('errorBox').style.display = 'block';
-    document.getElementById('errorBox').scrollIntoView({ behavior: 'smooth' });
+  } catch(err){
+    document.getElementById('errBox').innerHTML='<div class="alert aerror"><strong>Error:</strong> '+err.message+'</div>';
+    document.getElementById('errBox').style.display='block';
+    document.getElementById('errBox').scrollIntoView({behavior:'smooth'});
   }
 
-  document.getElementById('loadingCard').style.display = 'none';
-  document.getElementById('runBtn').disabled = false;
+  document.getElementById('loadCard').style.display='none';
+  document.getElementById('runBtn').disabled=false;
 }
 
-function setStep(text) { document.getElementById('loadingStep').textContent = text; }
+function setStep(t){document.getElementById('lstep').textContent=t;}
 
-// ── RENDER RESULTS ─────────────────────────────────────
-function sc(s) { return s >= 7 ? 's-high' : s >= 5 ? 's-mid' : 's-low'; }
-function fc(s) { return s >= 7 ? 'f-high' : s >= 5 ? 'f-mid' : 'f-low'; }
+function sc(s){return s>=7?'sh':s>=5?'sm':'sl';}
+function fc(s){return s>=7?'fh':s>=5?'fm':'fl';}
 
-function renderResult(r, candidateName, roleName, jdLabel) {
-  const verdict = r.verdict || 'maybe';
-  const vLabel = verdict === 'hire' ? '✅ Hire' : verdict === 'no_hire' ? '❌ No hire' : '🤔 Needs discussion';
-  const vClass = 'verdict-' + verdict;
-  const scores = r.scores || {};
-  const os = r.overall_score || 0;
-  const signals = (r.hire_signals||[]).map(s=>'<li><span>✅</span><span>'+s+'</span></li>').join('') || '<li><span>—</span><span>None identified</span></li>';
-  const concerns = (r.concerns||[]).map(c=>'<li><span>⚠️</span><span>'+c+'</span></li>').join('') || '<li><span>—</span><span>None identified</span></li>';
+function renderResult(r,cname,rname,jdLabel){
+  var v=r.verdict||'maybe';
+  var vl=v==='hire'?'✅ Hire':v==='no_hire'?'❌ No hire':'🤔 Needs discussion';
+  var vc=v==='hire'?'vhire':v==='no_hire'?'vnohire':'vmaybe';
+  var s=r.scores||{};
+  var os=r.overall_score||0;
+  var sigs=(r.hire_signals||[]).map(function(x){return'<li><span>✅</span><span>'+x+'</span></li>';}).join('')||'<li><span>—</span><span>None identified</span></li>';
+  var cons=(r.concerns||[]).map(function(x){return'<li><span>⚠️</span><span>'+x+'</span></li>';}).join('')||'<li><span>—</span><span>None identified</span></li>';
+  var keys=['jd_fit','cv_strength','interview_signals','team_fit'];
+  var labels=['JD Fit','CV Strength','Interview','Team Fit'];
+  var scoreBoxes=keys.map(function(k,i){
+    var v2=s[k]||0;
+    return'<div class="scbox"><div class="sclabel">'+labels[i]+'</div><div class="scval '+sc(v2)+'">'+v2+'</div><div class="scbar"><div class="scfill '+fc(v2)+'" style="width:'+v2*10+'%"></div></div></div>';
+  }).join('');
 
-  return `<div class="result-card">
-  <div class="result-header">
-    <div>
-      <h3>${candidateName}</h3>
-      <div class="rmeta">${roleName} · <strong>${jdLabel}</strong> · Confidence: ${r.confidence||'medium'}</div>
-      ${r.one_liner ? '<div style="margin-top:8px;font-size:14px;color:#3a3a3c;font-style:italic">"'+r.one_liner+'"</div>' : ''}
-    </div>
-    <div class="verdict ${vClass}">${vLabel}</div>
-  </div>
-  <div class="score-row">
-    ${['jd_fit','cv_strength','interview_signals','team_fit'].map((key,i) => {
-      const labels = ['JD Fit','CV Strength','Interview','Team Fit'];
-      const val = scores[key] || 0;
-      return '<div class="score-box"><div class="score-label">'+labels[i]+'</div><div class="score-val '+sc(val)+'">'+val+'</div><div class="score-bar"><div class="score-fill '+fc(val)+'" style="width:'+val*10+'%"></div></div></div>';
-    }).join('')}
-  </div>
-  <div class="result-body">
-    <div class="result-section">
-      <div class="section-label">Overall score</div>
-      <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px">
-        <span class="big-score ${sc(os)}">${os}</span><span class="denom">/10</span>
-      </div>
-    </div>
-    <div class="result-section">
-      <div class="section-label">Reasoning</div>
-      <p>${r.reasoning||'No reasoning provided'}</p>
-    </div>
-    <div class="result-section">
-      <div class="signals-grid">
-        <div><div class="signal-heading" style="color:#1a7f37">Hire signals</div><ul class="signal-list">${signals}</ul></div>
-        <div><div class="signal-heading" style="color:#d70015">Concerns</div><ul class="signal-list">${concerns}</ul></div>
-      </div>
-    </div>
-    ${r.must_have_check ? '<div class="result-section"><div class="section-label">Must-have check</div><p>'+r.must_have_check+'</p></div>' : ''}
-    <div class="result-section">
-      <div class="section-label">Recommended next step</div>
-      <p style="font-weight:600">${r.next_step||'—'}</p>
-    </div>
-    ${r.data_gaps && r.data_gaps.toLowerCase() !== 'none' ? '<div class="result-section"><div class="alert alert-warning" style="margin:0"><strong>Data gaps:</strong> '+r.data_gaps+'</div></div>' : ''}
-  </div>
-</div>`;
+  return'<div class="rcard">'
+    +'<div class="rheader">'
+    +'<div><h3>'+cname+'</h3>'
+    +'<div class="rsubtitle">'+rname+' · <strong>'+jdLabel+'</strong> · Confidence: '+(r.confidence||'medium')+'</div>'
+    +(r.one_liner?'<div style="margin-top:8px;font-size:14px;color:#3a3a3c;font-style:italic">"'+r.one_liner+'"</div>':'')
+    +'</div>'
+    +'<div class="verdict '+vc+'">'+vl+'</div>'
+    +'</div>'
+    +'<div class="scrow">'+scoreBoxes+'</div>'
+    +'<div class="rbody">'
+    +'<div class="rsec"><div class="slabel">Overall score</div>'
+    +'<div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px">'
+    +'<span class="bigscore '+sc(os)+'">'+os+'</span><span class="denom">/10</span></div></div>'
+    +'<div class="rsec"><div class="slabel">Reasoning</div><p>'+(r.reasoning||'No reasoning provided')+'</p></div>'
+    +'<div class="rsec"><div class="sgrid">'
+    +'<div><div class="sheading" style="color:#1a7f37">Hire signals</div><ul class="slist">'+sigs+'</ul></div>'
+    +'<div><div class="sheading" style="color:#d70015">Concerns</div><ul class="slist">'+cons+'</ul></div>'
+    +'</div></div>'
+    +(r.must_have_check?'<div class="rsec"><div class="slabel">Must-have check</div><p>'+r.must_have_check+'</p></div>':'')
+    +'<div class="rsec"><div class="slabel">Recommended next step</div><p style="font-weight:600">'+(r.next_step||'—')+'</p></div>'
+    +(r.data_gaps&&r.data_gaps.toLowerCase()!=='none'?'<div class="rsec"><div class="alert awarn" style="margin:0"><strong>Data gaps:</strong> '+r.data_gaps+'</div></div>':'')
+    +'</div></div>';
 }
 
-// ── INIT ───────────────────────────────────────────────
-function init() {
-  renderPresetGrid();
-  const keys = getKeys();
-  if (!keys.ashby || !keys.openai) {
-    document.getElementById('errorBox').innerHTML = '<div class="alert alert-info">👋 Welcome! Open <strong>Settings ⚙️</strong> top right to add your Ashby and OpenAI API keys to get started.</div>';
-    document.getElementById('errorBox').style.display = 'block';
+function init(){
+  renderGrid();
+  var k=gk();
+  if(!k.ashby||!k.openai){
+    document.getElementById('errBox').innerHTML='<div class="alert ainfo">👋 Welcome! Open <strong>Settings ⚙️</strong> top right to add your Ashby and OpenAI API keys.</div>';
+    document.getElementById('errBox').style.display='block';
   }
-  document.addEventListener('click', function(e) {
-    const wrap = document.getElementById('searchWrap');
-    if (wrap && !wrap.contains(e.target)) {
-      document.getElementById('searchResults').style.display = 'none';
-    }
+  document.addEventListener('click',function(e){
+    var w=document.getElementById('searchWrap');
+    if(w&&!w.contains(e.target)){document.getElementById('searchResults').style.display='none';}
   });
 }
 
