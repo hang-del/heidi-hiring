@@ -506,10 +506,18 @@ async function ashbyCall(endpoint,body){
 function parseLink(s){
   s=s.trim();
   var m;
-  m=s.match(/applications\/([a-f0-9-]{36})/i);if(m)return{type:'application',id:m[1]};
-  m=s.match(/candidates\/([a-f0-9-]{36})/i);if(m)return{type:'candidate',id:m[1]};
-  m=s.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i);if(m)return{type:'candidate',id:m[1]};
+  // Try to find application ID first - look for applications/ followed by UUID
+  m=s.match(/applications\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i);
+  if(m)return{type:'application',id:m[1]};
+  // Try candidate ID
+  m=s.match(/candidates\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i);
+  if(m)return{type:'candidate',id:m[1]};
+  // Last resort - grab any UUID from the URL, prefer second one if multiple (likely application)
+  var all=s.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/gi);
+  if(all&&all.length>=2)return{type:'application',id:all[1]};
+  if(all&&all.length===1)return{type:'candidate',id:all[0]};
   return null;
+
 }
 
 async function fetchData(){
