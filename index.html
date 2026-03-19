@@ -425,7 +425,7 @@ function onType(){
   clearTimeout(searchTimer);
   var v=document.getElementById('searchInput').value.trim();
   if(v.length<2){document.getElementById('searchResults').style.display='none';return;}
-  searchTimer=setTimeout(doSearch,600);
+  searchTimer=setTimeout(doSearch,800);
 }
 
 async function doSearch(){
@@ -437,7 +437,7 @@ async function doSearch(){
   btn.disabled=true;btn.textContent='Searching…';
   showMsg('<span class="mspinner"></span>Searching Ashby…');
   try{
-    var q=query.toLowerCase();
+    var q=query.toLowerCase().trim();
     var found=[];
     var cursor=null;
     var pages=0;
@@ -445,16 +445,23 @@ async function doSearch(){
       var body=cursor?{cursor:cursor}:{};
       var data=await ashbyCall('/candidate.list',body);
       var results=data.results||[];
-      var matches=results.filter(function(c){return (c.name||'').toLowerCase().indexOf(q)!==-1;});
-      found=found.concat(matches);
+      for(var i=0;i<results.length;i++){
+        var c=results[i];
+        var n=(c.name||'').toLowerCase();
+        if(n.indexOf(q)!==-1){
+          found.push(c);
+          if(found.length>=8)break;
+        }
+      }
       cursor=data.nextCursor||null;
       pages++;
-      if(found.length>=8||pages>=8)break;
+      if(found.length>=8||pages>=10)break;
     } while(cursor);
-    searchData=found.slice(0,8);
+
+    searchData=found;
     if(!searchData.length){showMsg('No candidates found for "'+query+'"');btn.disabled=false;btn.textContent='Search';return;}
     renderResults();
-  } catch(err){
+  }catch(err){
     showMsg('Error: '+err.message);
   }
   btn.disabled=false;btn.textContent='Search';
@@ -470,8 +477,8 @@ function renderResults(){
   var b=document.getElementById('searchResults');
   b.innerHTML=searchData.map(function(c){
     var ini=initials(c.name||'?');
-    var appId=(c.applicationIds||[])[0]||'';
-    var d=JSON.stringify({id:c.id,appId:appId,name:c.name,pos:c.position||'',company:c.company||'',email:(c.primaryEmailAddress&&c.primaryEmailAddress.value)||''});
+    var candId=c.id;
+    var d=JSON.stringify({candId:candId,name:c.name,pos:c.position||'',company:c.company||'',email:(c.primaryEmailAddress&&c.primaryEmailAddress.value)||''});
     return '<div class="sri" onclick=\'pick('+d.replace(/'/g,"&#39;")+')\' >'
       +'<div class="av">'+ini+'</div>'
       +'<div><div class="rname">'+(c.name||'Unknown')+'</div>'
@@ -492,7 +499,7 @@ function pick(c){
     +'<div class="av" style="width:40px;height:40px;font-size:15px">'+ini+'</div>'
     +'<div class="selbox-info">'
     +'<div class="selbox-name">'+c.name+'</div>'
-    +'<div class="selbox-meta">'+(c.appId?'✓ Application found':'No application ID — will search')+'</div>'
+    +'<div class="selbox-meta">Candidate selected — will find their application automatically</div>'
     +'</div>'
     +'<button class="clearbtn" onclick="clearSel()">✕</button>'
     +'</div>';
@@ -529,19 +536,17 @@ function parseLink(s){
 }
 
 async function fetchData(){
-  var appId=null,candId=null;
+  var appId=null;
+  var candId=null;
+
   if(activeTab==='search'){
     if(!selCandidate)throw new Error('No candidate selected');
-    if(selCandidate.appId){
-      appId=selCandidate.appId;
-    } else {
-      candId=selCandidate.id;
-      setStep('Finding applications…');
-      var r=await ashbyCall('/application.list',{candidateId:candId});
-      var apps=r.results||[];
-      if(!apps.length)throw new Error('No applications found for this candidate in Ashby');
-      appId=apps[0].id;
-    }
+    candId=selCandidate.candId;
+    setStep('Finding applications for candidate…');
+    var appList=await ashbyCall('/application.list',{candidateId:candId});
+    var apps=appList.results||[];
+    if(!apps.length)throw new Error('No applications found for this candidate in Ashby');
+    appId=apps[0].id;
   } else {
     var lv=document.getElementById('linkInput').value.trim();
     if(!lv)throw new Error('Please paste an Ashby link');
@@ -559,22 +564,22 @@ async function fetchData(){
     }
   }
 
-  setStep('Fetching application…');
+  setStep('Fetching application details…');
   var ar=await ashbyCall('/application.info',{id:appId});
   var app=ar.results;
   if(!app)throw new Error('Application not found — check the link or ID');
 
-  candId=candId||app.candidate&&app.candidate.id;
+  candId=candId||(app.candidate&&app.candidate.id);
   var jobId=app.job&&app.job.id;
 
   setStep('Fetching profile, job and interview notes…');
-  var results=await Promise.all([
+  var parallel=await Promise.all([
     candId?ashbyCall('/candidate.info',{id:candId}):Promise.resolve({results:{}}),
     jobId?ashbyCall('/job.info',{id:jobId}):Promise.resolve({results:{}}),
     ashbyCall('/applicationFeedback.list',{applicationId:appId})
   ]);
 
-  return{app:app,candidate:results[0].results||{},job:results[1].results||{},feedbacks:results[2].results||[]};
+  return{app:app,candidate:parallel[0].results||{},job:parallel[1].results||{},feedbacks:parallel[2].results||[]};
 }
 
 function exProfile(c,app){
@@ -636,22 +641,21 @@ async function callAI(prompt){
 }
 
 function buildPrompt(preset,jdText,jdLabel,profile,answers,feedback,extra){
-  return'You are a senior talent advisor at Heidi Health, an AI-powered clinical documentation company. Make clear evidence-based hire or no-hire decisions. Be direct and specific. Back every claim with evidence.\n\n'
+  return'You are a senior talent advisor at Heidi Health. Make clear evidence-based hire or no-hire decisions. Be direct. Back every claim with evidence.\n\n'
     +'TEAM: '+preset.name+'\n'+(preset.teamDesc||'')+'\n\n'
     +'JD: '+jdLabel+'\n'+jdText+'\n\n'
-    +(preset.mustHaves?'MUST-HAVES (failure = no hire):\n'+preset.mustHaves+'\n\n':'')
+    +(preset.mustHaves?'MUST-HAVES:\n'+preset.mustHaves+'\n\n':'')
     +(preset.redFlags?'RED FLAGS:\n'+preset.redFlags+'\n\n':'')
     +'CANDIDATE PROFILE:\n'+profile+'\n\n'
     +'APPLICATION ANSWERS:\n'+answers+'\n\n'
-    +'INTERVIEW NOTES FROM ASHBY:\n'+feedback+'\n\n'
+    +'INTERVIEW NOTES:\n'+feedback+'\n\n'
     +(extra?'ADDITIONAL CONTEXT:\n'+extra+'\n\n':'')
-    +'Return JSON:\n'
-    +'{\n'
+    +'Return JSON:\n{\n'
     +'"verdict":"hire" or "no_hire" or "maybe",\n'
     +'"confidence":"high" or "medium" or "low",\n'
     +'"overall_score":integer 1-10,\n'
     +'"scores":{"jd_fit":integer,"cv_strength":integer,"interview_signals":integer,"team_fit":integer},\n'
-    +'"one_liner":"punchy single sentence about this candidate",\n'
+    +'"one_liner":"punchy single sentence",\n'
     +'"reasoning":"4-6 sentences with specific evidence",\n'
     +'"hire_signals":["signal","signal"],\n'
     +'"concerns":["concern","concern"],\n'
@@ -659,7 +663,7 @@ function buildPrompt(preset,jdText,jdLabel,profile,answers,feedback,extra){
     +'"next_step":"specific recommended action",\n'
     +'"data_gaps":"what is missing or None"\n'
     +'}\n\n'
-    +'Rules: interview_signals=5 if no notes yet. confidence=low if no interview notes. Name specific companies and technologies from background. Do not invent information.';
+    +'Rules: interview_signals=5 if no notes yet. confidence=low if no interview notes. Name specific companies and technologies. Do not invent information.';
 }
 
 async function runReview(){
@@ -718,7 +722,7 @@ async function runReview(){
     document.getElementById('resultsArea').innerHTML=html;
     document.getElementById('resultsArea').scrollIntoView({behavior:'smooth'});
 
-  } catch(err){
+  }catch(err){
     document.getElementById('errBox').innerHTML='<div class="alert aerror"><strong>Error:</strong> '+err.message+'</div>';
     document.getElementById('errBox').style.display='block';
     document.getElementById('errBox').scrollIntoView({behavior:'smooth'});
@@ -747,7 +751,6 @@ function renderResult(r,cname,rname,jdLabel){
     var v2=s[k]||0;
     return'<div class="scbox"><div class="sclabel">'+labels[i]+'</div><div class="scval '+sc(v2)+'">'+v2+'</div><div class="scbar"><div class="scfill '+fc(v2)+'" style="width:'+v2*10+'%"></div></div></div>';
   }).join('');
-
   return'<div class="rcard">'
     +'<div class="rheader">'
     +'<div><h3>'+cname+'</h3>'
