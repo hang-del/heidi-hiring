@@ -434,12 +434,14 @@ async function doSearch(){
       }
       cursor=data.nextCursor||null;
       pages++;
-      if(found.length>=8||pages>=10)break;
+      if(found.length>=8||pages>=15)break;
     } while(cursor);
     searchData=found;
     if(!searchData.length){showMsg('No candidates found for "'+query+'"');btn.disabled=false;btn.textContent='Search';return;}
-    renderSResults();
-  }catch(err){showMsg('Error: '+err.message);}
+    renderResults();
+  }catch(err){
+    showMsg('Error: '+err.message);
+  }
   btn.disabled=false;btn.textContent='Search';
 }
 
@@ -519,45 +521,50 @@ async function fetchData(){
   var candId=null;
 
   if(activeTab==='search'){
-    if(!selCandidate)throw new Error('No candidate selected — please search and click a name');
+    if(!selCandidate)throw new Error('No candidate selected');
     candId=selCandidate.candId;
-    if(!candId)throw new Error('Candidate ID missing — please search again');
-    setStep('Finding applications for '+selCandidate.name+'…');
+    if(!candId)throw new Error('No candidate ID — please search again');
+    setStep('Finding applications for candidate…');
     var appList=await ashbyCall('/application.list',{candidateId:candId});
     var apps=appList.results||[];
-    if(!apps.length)throw new Error('No applications found for this candidate in Ashby');
-    // Prefer active applications over archived ones
-    var active=apps.filter(function(a){return a.status==='Active';});
-    appId=(active.length?active[0]:apps[0]).id;
+    if(!apps.length)throw new Error('No applications found for this candidate');
+    var activeApp=null;
+    for(var i=0;i<apps.length;i++){
+      if(apps[i].status==='Active'){activeApp=apps[i];break;}
+    }
+    var chosenApp=activeApp||apps[0];
+    appId=chosenApp.id;
+    if(!appId)throw new Error('Application has no ID');
 
   } else {
     var lv=document.getElementById('linkInput').value.trim();
     if(!lv)throw new Error('Please paste an Ashby link');
-    var parsed=parseLink(lv);
-    if(!parsed)throw new Error('Could not find a valid ID in that link — paste the full URL from Ashby');
-
-    if(parsed.type==='both'){
-      // We have both candidate and application ID from the URL
-      appId=parsed.appId;
-      candId=parsed.candId;
-    } else if(parsed.type==='application'){
-      appId=parsed.appId;
-    } else {
-      // Candidate only — find their applications
-      candId=parsed.candId;
-      setStep('Finding applications…');
-      var r2=await ashbyCall('/application.list',{candidateId:candId});
-      var apps2=r2.results||[];
-      if(!apps2.length)throw new Error('No applications found for this candidate');
-      var active2=apps2.filter(function(a){return a.status==='Active';});
-      appId=(active2.length?active2[0]:apps2[0]).id;
+    var m;
+    m=lv.match(/applications\/([a-f0-9-]{36})/i);
+    if(m){appId=m[1];}
+    else{
+      m=lv.match(/candidates\/([a-f0-9-]{36})/i);
+      if(m){
+        candId=m[1];
+        setStep('Finding applications…');
+        var r2=await ashbyCall('/application.list',{candidateId:candId});
+        var apps2=r2.results||[];
+        if(!apps2.length)throw new Error('No applications found for this candidate');
+        var activeApp2=null;
+        for(var j=0;j<apps2.length;j++){
+          if(apps2[j].status==='Active'){activeApp2=apps2[j];break;}
+        }
+        appId=(activeApp2||apps2[0]).id;
+      } else {
+        throw new Error('Could not find a candidate or application ID in that link. Paste the full Ashby URL.');
+      }
     }
   }
 
-  setStep('Fetching application details…');
+  setStep('Fetching application…');
   var ar=await ashbyCall('/application.info',{id:appId});
   var app=ar.results;
-  if(!app)throw new Error('Application not found — the link may be to a deleted or inaccessible application');
+  if(!app)throw new Error('Application not found');
 
   candId=candId||(app.candidate&&app.candidate.id);
   var jobId=app.job&&app.job.id;
