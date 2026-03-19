@@ -876,7 +876,12 @@ async function doSearch() {
   btn.textContent = 'Searching…';
   showSearchMsg('<span class="mini-spinner"></span> Searching Ashby…');
   try {
-    const data = await ashbyCall('/candidate.search', { query });
+    const data = await ashbyCall('/candidate.list', {});
+const allCandidates = data.results || [];
+const filtered = allCandidates.filter(c =>
+  c.name && c.name.toLowerCase().includes(query.toLowerCase())
+);
+data.results = filtered;
     searchData = (data.results || []).slice(0, 8);
     highlightIdx = -1;
     if (!searchData.length) { showSearchMsg('No candidates found for "' + query + '"'); return; }
