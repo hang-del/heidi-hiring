@@ -878,14 +878,13 @@ async function doSearch() {
   try {
     const data = await ashbyCall('/candidate.list', {});
 const allCandidates = data.results || [];
-const filtered = allCandidates.filter(c =>
-  c.name && c.name.toLowerCase().includes(query.toLowerCase())
-);
-data.results = filtered;
-    searchData = (data.results || []).slice(0, 8);
-    highlightIdx = -1;
-    if (!searchData.length) { showSearchMsg('No candidates found for "' + query + '"'); return; }
-    renderSearchResults();
+const q = query.toLowerCase();
+searchData = allCandidates.filter(c =>
+  (c.name || '').toLowerCase().includes(q)
+).slice(0, 8);
+highlightIdx = -1;
+if (!searchData.length) { showSearchMsg('No candidates found for "' + query + '"'); return; }
+renderSearchResults();
   } catch(err) {
     showSearchMsg('Error: ' + err.message);
   }
