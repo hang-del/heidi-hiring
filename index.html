@@ -554,10 +554,26 @@ async function doSearch() {
   btn.textContent = 'Searching…';
   showSearchMsg('<span class="mini-spinner"></span> Searching Ashby…');
   try {
-    const data = await ashbyCall('/candidate.list', { limit: 500 });
-    const allCandidates = data.results || [];
     const q = query.toLowerCase();
-    searchData = allCandidates.filter(c => (c.name || '').toLowerCase().includes(q)).slice(0, 8);
+    let allCandidates = [];
+    let cursor = null;
+    let pages = 0;
+
+    do {
+      const body = cursor ? { cursor } : {};
+      const data = await ashbyCall('/candidate.list', body);
+      const results = data.results || [];
+      allCandidates = allCandidates.concat(results);
+      cursor = data.nextCursor || null;
+      pages++;
+
+      const found = allCandidates.filter(c => (c.name || '').toLowerCase().includes(q));
+      if (found.length >= 8 || !cursor || pages >= 5) {
+        searchData = found.slice(0, 8);
+        break;
+      }
+    } while (cursor);
+
     highlightIdx = -1;
     if (!searchData.length) { showSearchMsg('No candidates found for "' + query + '"'); btn.disabled = false; btn.textContent = 'Search'; return; }
     renderSearchResults();
@@ -642,12 +658,15 @@ async function ashbyCall(endpoint, body) {
 
 function parseLink(input) {
   input = input.trim();
+  // Try application ID first
   const appMatch = input.match(/applications\/([a-f0-9-]{36})/i);
   if (appMatch) return { type: 'application', id: appMatch[1] };
+  // Try candidate ID
   const candMatch = input.match(/candidates\/([a-f0-9-]{36})/i);
   if (candMatch) return { type: 'candidate', id: candMatch[1] };
-  const uuidMatch = input.match(/^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i);
-  if (uuidMatch) return { type: 'application', id: uuidMatch[1] };
+  // Bare UUID - treat as candidate ID since application IDs rarely get pasted alone
+  const uuidMatch = input.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i);
+  if (uuidMatch) return { type: 'candidate', id: uuidMatch[1] };
   return null;
 }
 
@@ -659,28 +678,21 @@ async function fetchData() {
     if (!selectedCandidate) throw new Error('No candidate selected');
     if (selectedCandidate.applicationId) {
       applicationId = selectedCandidate.applicationId;
-    } else {
-      candidateId = selectedCandidate.id;
-      setStep('Finding applications…');
-      const r = await ashbyCall('/application.list', { candidateId });
-      const apps = r.results || [];
-      if (!apps.length) throw new Error('No applications found for this candidate in Ashby');
-      applicationId = apps[0].id;
-    }
   } else {
     const linkVal = document.getElementById('linkInput').value.trim();
     if (!linkVal) throw new Error('Please paste an Ashby link');
     const parsed = parseLink(linkVal);
     if (!parsed) throw new Error('Could not find a valid ID in that link — paste the full URL from Ashby');
-    if (parsed.type === 'candidate') {
-      candidateId = parsed.id;
+    // Always resolve via candidate to be safe
+    candidateId = parsed.type === 'candidate' ? parsed.id : null;
+    if (parsed.type === 'application') {
+      applicationId = parsed.id;
+    } else {
       setStep('Finding applications…');
-      const r = await ashbyCall('/application.list', { candidateId });
+      const r = await ashbyCall('/application.list', { candidateId: parsed.id });
       const apps = r.results || [];
       if (!apps.length) throw new Error('No applications found for this candidate');
       applicationId = apps[0].id;
-    } else {
-      applicationId = parsed.id;
     }
   }
 
