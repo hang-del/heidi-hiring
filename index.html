@@ -424,16 +424,23 @@ async function doSearch(){
       for(var i=0;i<results.length;i++){
         var c=results[i];
         var n=(c.name||'').toLowerCase();
-        if(n.indexOf(q)!==-1){found.push(c);if(found.length>=8)break;}
+        var parts=q.split(' ').filter(Boolean);
+        var matches=parts.every(function(part){return n.indexOf(part)!==-1;});
+        if(matches){
+          found.push(c);
+          if(found.length>=8)break;
+        }
       }
       cursor=data.nextCursor||null;
       pages++;
-      if(found.length>=8||pages>=10)break;
+      if(found.length>=8||pages>=15)break;
     } while(cursor);
     searchData=found;
-    if(!searchData.length){showMsg('No candidates found for "'+query+'"');btn.disabled=false;btn.textContent='Search';return;}
-    renderSResults();
-  }catch(err){showMsg('Error: '+err.message);}
+    if(!searchData.length){showMsg('No candidates found for "'+query+'" — try first name only or check spelling');btn.disabled=false;btn.textContent='Search';return;}
+    renderResults();
+  }catch(err){
+    showMsg('Error: '+err.message);
+  }
   btn.disabled=false;btn.textContent='Search';
 }
 
