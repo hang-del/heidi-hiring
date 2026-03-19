@@ -542,11 +542,14 @@ async function fetchData(){
   if(activeTab==='search'){
     if(!selCandidate)throw new Error('No candidate selected');
     candId=selCandidate.candId;
+    if(!candId)throw new Error('No candidate ID found — please search again and reselect');
     setStep('Finding applications for candidate…');
     var appList=await ashbyCall('/application.list',{candidateId:candId});
     var apps=appList.results||[];
     if(!apps.length)throw new Error('No applications found for this candidate in Ashby');
     appId=apps[0].id;
+    if(!appId)throw new Error('Application found but has no ID — please try the link method instead');
+  }
   } else {
     var lv=document.getElementById('linkInput').value.trim();
     if(!lv)throw new Error('Please paste an Ashby link');
@@ -565,6 +568,7 @@ async function fetchData(){
   }
 
   setStep('Fetching application details…');
+  if(!appId)throw new Error('No application ID available — please paste the Ashby link directly instead');
   var ar=await ashbyCall('/application.info',{id:appId});
   var app=ar.results;
   if(!app)throw new Error('Application not found — check the link or ID');
