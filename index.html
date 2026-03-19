@@ -862,7 +862,9 @@ async function ashbyCall(endpoint, body) {
     throw new Error('Proxy error ' + res.status + ': ' + t.substring(0,150));
   }
   const data = await res.json();
-  if (data.errors?.length) throw new Error('Ashby: ' + data.errors[0].message);
+  if (data.errors?.length && data.errors[0]) {
+  throw new Error('Ashby: ' + (data.errors[0].message || data.errors[0]));
+}
   return data;
 }
 
@@ -876,11 +878,12 @@ async function doSearch() {
   btn.textContent = 'Searching…';
   showSearchMsg('<span class="mini-spinner"></span> Searching Ashby…');
   try {
-    const data = await ashbyCall('/candidate.list', {});
+const data = await ashbyCall('/candidate.list', { limit: 500 });
 const allCandidates = data.results || [];
 const q = query.toLowerCase();
 searchData = allCandidates.filter(c =>
   (c.name || '').toLowerCase().includes(q)
+).slice(0, 8);
 ).slice(0, 8);
 highlightIdx = -1;
 if (!searchData.length) { showSearchMsg('No candidates found for "' + query + '"'); return; }
