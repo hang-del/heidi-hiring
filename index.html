@@ -155,12 +155,12 @@ textarea{resize:vertical;line-height:1.5}
         </div>
         <div class="sresults" id="searchResults"></div>
       </div>
-      <div class="hint">Searches candidates in your Ashby account</div>
+      <div class="hint">Searches all candidates in your Ashby account</div>
     </div>
     <div id="panelLink" style="display:none">
       <label>Paste the Ashby URL for this candidate</label>
       <input type="text" id="linkInput" placeholder="https://app.ashbyhq.com/candidates/..." />
-      <div class="hint">Copy the full URL from your browser address bar when viewing a candidate in Ashby</div>
+      <div class="hint">Copy the full URL from your browser when viewing a candidate in Ashby</div>
     </div>
     <div id="selBox" style="display:none"></div>
   </div>
@@ -238,152 +238,77 @@ textarea{resize:vertical;line-height:1.5}
 
 <script>
 var PROXY='https://ashby-proxy-jb4mjfwcz-hang-dels-projects.vercel.app/api/proxy';
+
 var AI_JD='Senior AI Engineer. Lead R&D for step-changes in model performance. Build fine-tuned LLMs. Create evaluation frameworks. Develop novel techniques for healthcare. Requirements: proven track record improving large-scale AI models, shipped LLM features to production, expert Python and PyTorch/TensorFlow, deep ML and stats foundations. PhD preferred.';
+
 var DEFAULTS=[
   {id:'orchestration',name:'Orchestration',desc:'Context retrieval, intent routing, memory, tool orchestration',
    teamDesc:'The Orchestration team builds the connective tissue between all Heidi capabilities. They own context retrieval, intent routing, memory, and tool orchestration.',
-   jd:'Staff+ AI scientist/engineer. Own clinician-grade retrieval and QA stack. Build hybrid search (lexical + vector + re-ranking). Design grounding and answer synthesis with source citation. Lead model work. Stand up gold-standard evaluation. Productionize services with observability. Requirements: staff-level track record shipping search/NLP/LLM at scale, strong Python, depth in RAG and embeddings, MLOps, rigorous evaluation design, safety thinking.',
+   jd:'Staff+ AI scientist/engineer. Own clinician-grade retrieval and QA stack. Build hybrid search (lexical + vector + re-ranking). Design grounding and answer synthesis with source citation. Lead model work across prompting, fine-tuning, and tool use. Stand up gold-standard evaluation with offline IR metrics. Productionize services with observability. Set data governance for medical content. Requirements: staff-level track record shipping search/NLP/LLM at scale, strong Python, depth in RAG and embeddings, MLOps, rigorous evaluation design, safety thinking.',
    mustHaves:'Production experience shipping search, NLP, or LLM systems to real users at scale. Hands-on RAG or hybrid retrieval. Strong Python and software engineering. Rigorous evaluation approach.',
-   redFlags:'Only academic background. No retrieval or search experience. Weak on evaluation. No safety awareness. No product sense.'},
+   redFlags:'Only academic background with nothing shipped. No retrieval or search experience. Weak on evaluation. No safety awareness. No product sense.'},
   {id:'evidence',name:'Evidence',desc:'Citation-backed clinical evidence from trusted medical sources',
    teamDesc:'The Evidence team builds Heidi Evidence — citation-backed answers from trusted medical sources with transparent source attribution.',
-   jd:'Senior Software Engineer focused on retrieval systems, RAG pipelines, and clinical AI. Build systems that retrieve, rank, and present clinical evidence. Experience with search, embeddings, RAG strongly preferred. Safety mindset essential.',
+   jd:'Senior Software Engineer focused on retrieval systems, RAG pipelines, and clinical AI. Build and improve systems that retrieve, rank, and present clinical evidence. Experience with search, embeddings, RAG strongly preferred. Safety and quality mindset essential.',
    mustHaves:'Experience with RAG, semantic search, or retrieval in production. Understanding of safe and trustworthy AI. Strong product sense.',
-   redFlags:'No retrieval experience. Dismissive of safety concerns. No product sense. Never shipped to real users.'},
+   redFlags:'No retrieval or search experience. Dismissive of safety concerns. No product sense. Never shipped to real end users.'},
   {id:'comms',name:'Comms',desc:'AI voice agent for patient communications',
    teamDesc:'Heidi Comms is an AI voice agent and receptionist for clinic patient communications — calls, SMS, scheduling, follow-ups, and EHR integrations.',
    jd:'Senior Software Engineer to build AI-powered voice and communications infrastructure. Work on real-time voice AI, telephony, and clinic system integrations. Experience with real-time systems, VoIP, or conversational AI preferred.',
-   mustHaves:'Experience building real-time or communications systems in production. Strong product sense around reliability.',
-   redFlags:'No real-time systems experience. Poor understanding of reliability. Only internal tooling.'},
+   mustHaves:'Experience building real-time or communications systems in production. Strong product sense around reliability. Track record shipping complex backend systems.',
+   redFlags:'No real-time systems experience. Poor understanding of reliability. No empathy for end users. Only internal tooling.'},
   {id:'models',name:'Models',desc:'AI model platform — fine-tuning, alignment, evaluation, R&D',
    teamDesc:'The Models team researches, evaluates, and deploys AI models powering Heidi. They own model infrastructure, experimentation, and model R&D.',
-   jd:'Senior AI Model Engineer. Lead R&D for step-changes in model performance. Tackle model behaviour, alignment, and safety. Build fine-tuned LLMs. Develop novel techniques for healthcare. PhD preferred.',
-   mustHaves:'Production experience deploying ML/LLM models. Strong ML fundamentals. Hands-on LLM experience. Track record connecting model work to product outcomes.',
-   redFlags:'Only academic research. No LLM experience. Cannot connect model work to outcomes. No production experience.'}
+   jd:'Senior AI Model Engineer. Lead R&D for step-changes in model performance. Tackle model behaviour, alignment, and safety. Build fine-tuned LLMs. Create evaluation frameworks. Develop novel techniques for healthcare domain. Requirements: track record improving large-scale AI models, shipped LLM features to production, expert Python and PyTorch, strong ML and stats foundations. PhD preferred.',
+   mustHaves:'Production experience deploying and monitoring ML/LLM models. Strong ML fundamentals. Hands-on LLM experience. Track record connecting model improvements to product outcomes.',
+   redFlags:'Only academic research. No LLM experience. Cannot connect model work to product outcomes. No experience shipping to real users.'}
 ];
 
 var selPreset=null,selJD='team',selCandidate=null,activeTab='search',editId=null,searchTimer=null,searchData=[];
 
-function gp(){try{var s=localStorage.getItem('hhp5');return s?JSON.parse(s):DEFAULTS;}catch(e){return DEFAULTS;}}
-function sp(p){localStorage.setItem('hhp5',JSON.stringify(p));}
+function gp(){try{var s=localStorage.getItem('hhp6');return s?JSON.parse(s):DEFAULTS;}catch(e){return DEFAULTS;}}
+function sp(p){localStorage.setItem('hhp6',JSON.stringify(p));}
 function gk(){return{ashby:localStorage.getItem('hha')||'',openai:localStorage.getItem('hho')||''};}
 
-function openSettings(){
-  var k=gk();
-  document.getElementById('ashbyKey').value=k.ashby;
-  document.getElementById('openaiKey').value=k.openai;
-  renderPList();
-  document.getElementById('settingsModal').classList.add('open');
-}
+function openSettings(){var k=gk();document.getElementById('ashbyKey').value=k.ashby;document.getElementById('openaiKey').value=k.openai;renderPList();document.getElementById('settingsModal').classList.add('open');}
 function closeSettings(){document.getElementById('settingsModal').classList.remove('open');renderGrid();}
-function saveKeys(){
-  localStorage.setItem('hha',document.getElementById('ashbyKey').value.trim());
-  localStorage.setItem('hho',document.getElementById('openaiKey').value.trim());
-  var m=document.getElementById('savedMsg');
-  m.style.display='inline';
-  setTimeout(function(){m.style.display='none';},2000);
-}
+function saveKeys(){localStorage.setItem('hha',document.getElementById('ashbyKey').value.trim());localStorage.setItem('hho',document.getElementById('openaiKey').value.trim());var m=document.getElementById('savedMsg');m.style.display='inline';setTimeout(function(){m.style.display='none';},2000);}
 function tv(id){var el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
 
 function renderGrid(){
-  var presets=gp();
-  var g=document.getElementById('presetGrid');
-  if(!presets.length){g.innerHTML='<p style="color:#86868b;font-size:14px">No presets — open Settings</p>';return;}
-  g.innerHTML=presets.map(function(p){
-    return '<div class="pcard'+(selPreset===p.id?' sel':'')+'" onclick="selP(\''+p.id+'\')">'
-      +'<div class="badge">✓</div><div class="pname">'+p.name+'</div>'
-      +'<div class="pdesc">'+p.desc+'</div></div>';
-  }).join('');
+  var presets=gp();var g=document.getElementById('presetGrid');
+  if(!presets.length){g.innerHTML='<p style="color:#86868b;font-size:14px">No presets — open Settings to add a team</p>';return;}
+  g.innerHTML=presets.map(function(p){return'<div class="pcard'+(selPreset===p.id?' sel':'')+'" onclick="selP(\''+p.id+'\')">'+'<div class="badge">✓</div><div class="pname">'+p.name+'</div><div class="pdesc">'+p.desc+'</div></div>';}).join('');
   renderJD();
 }
-
 function selP(id){selPreset=id;selJD='team';renderGrid();}
-
 function renderJD(){
   var w=document.getElementById('jdWrap');
   if(!selPreset){w.style.display='none';return;}
   var p=gp().find(function(x){return x.id===selPreset;});
   if(!p){w.style.display='none';return;}
   w.style.display='block';
-  var opts=[
-    {id:'team',name:p.name+' Team JD',desc:'Evaluate against the specific JD for this team'},
-    {id:'ai',name:'Generic Applied AI Engineer JD',desc:'Use the shared AI JD across any team'},
-    {id:'both',name:'Both JDs',desc:'Score against both and compare'}
-  ];
-  document.getElementById('jdList').innerHTML=opts.map(function(o){
-    return '<div class="jdopt'+(selJD===o.id?' sel':'')+'" onclick="selJDType(\''+o.id+'\')">'
-      +'<div class="rdot"></div>'
-      +'<div><div class="jdname">'+o.name+'</div><div class="jddesc">'+o.desc+'</div></div></div>';
-  }).join('');
+  var opts=[{id:'team',name:p.name+' Team JD',desc:'Evaluate against the specific JD for this team'},{id:'ai',name:'Generic Applied AI Engineer JD',desc:'Use the shared AI JD across any team'},{id:'both',name:'Both JDs',desc:'Score against both and compare'}];
+  document.getElementById('jdList').innerHTML=opts.map(function(o){return'<div class="jdopt'+(selJD===o.id?' sel':'')+'" onclick="selJDType(\''+o.id+'\')">'+'<div class="rdot"></div><div><div class="jdname">'+o.name+'</div><div class="jddesc">'+o.desc+'</div></div></div>';}).join('');
 }
-
 function selJDType(t){selJD=t;renderJD();}
-
 function renderPList(){
-  var presets=gp();
-  var l=document.getElementById('presetList');
+  var presets=gp();var l=document.getElementById('presetList');
   if(!presets.length){l.innerHTML='<p style="color:#86868b;font-size:13px">No presets yet</p>';return;}
-  l.innerHTML=presets.map(function(p){
-    return '<div class="pli"><div><div style="font-size:14px;font-weight:500">'+p.name+'</div>'
-      +'<div style="font-size:12px;color:#86868b;margin-top:2px">'+p.desc.substring(0,60)+'</div></div>'
-      +'<button class="bsec" style="font-size:12px;padding:6px 12px;flex-shrink:0;margin-left:12px" onclick="openEdit(\''+p.id+'\')">Edit</button></div>';
-  }).join('');
+  l.innerHTML=presets.map(function(p){return'<div class="pli"><div><div style="font-size:14px;font-weight:500">'+p.name+'</div><div style="font-size:12px;color:#86868b;margin-top:2px">'+p.desc.substring(0,60)+'</div></div><button class="bsec" style="font-size:12px;padding:6px 12px;flex-shrink:0;margin-left:12px" onclick="openEdit(\''+p.id+'\')">Edit</button></div>';}).join('');
 }
-
-function openAdd(){
-  editId=null;
-  document.getElementById('pModalTitle').textContent='Add team preset';
-  ['pName','pDesc','pJD','pMust','pFlags'].forEach(function(id){document.getElementById(id).value='';});
-  document.getElementById('pDelBtn').style.display='none';
-  document.getElementById('pErr').style.display='none';
-  document.getElementById('presetModal').classList.add('open');
-}
-
-function openEdit(id){
-  var p=gp().find(function(x){return x.id===id;});
-  if(!p)return;
-  editId=id;
-  document.getElementById('pModalTitle').textContent='Edit: '+p.name;
-  document.getElementById('pName').value=p.name||'';
-  document.getElementById('pDesc').value=p.desc||'';
-  document.getElementById('pJD').value=p.jd||'';
-  document.getElementById('pMust').value=p.mustHaves||'';
-  document.getElementById('pFlags').value=p.redFlags||'';
-  document.getElementById('pDelBtn').style.display='block';
-  document.getElementById('pErr').style.display='none';
-  document.getElementById('presetModal').classList.add('open');
-}
-
+function openAdd(){editId=null;document.getElementById('pModalTitle').textContent='Add team preset';['pName','pDesc','pJD','pMust','pFlags'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('pDelBtn').style.display='none';document.getElementById('pErr').style.display='none';document.getElementById('presetModal').classList.add('open');}
+function openEdit(id){var p=gp().find(function(x){return x.id===id;});if(!p)return;editId=id;document.getElementById('pModalTitle').textContent='Edit: '+p.name;document.getElementById('pName').value=p.name||'';document.getElementById('pDesc').value=p.desc||'';document.getElementById('pJD').value=p.jd||'';document.getElementById('pMust').value=p.mustHaves||'';document.getElementById('pFlags').value=p.redFlags||'';document.getElementById('pDelBtn').style.display='block';document.getElementById('pErr').style.display='none';document.getElementById('presetModal').classList.add('open');}
 function closePreset(){document.getElementById('presetModal').classList.remove('open');}
-
 function savePreset(){
-  var name=document.getElementById('pName').value.trim();
-  var desc=document.getElementById('pDesc').value.trim();
-  var jd=document.getElementById('pJD').value.trim();
-  var must=document.getElementById('pMust').value.trim();
-  var flags=document.getElementById('pFlags').value.trim();
-  if(!name||!jd){
-    var e=document.getElementById('pErr');
-    e.innerHTML='<div class="alert aerror">Team name and JD are required</div>';
-    e.style.display='block';return;
-  }
+  var name=document.getElementById('pName').value.trim();var desc=document.getElementById('pDesc').value.trim();var jd=document.getElementById('pJD').value.trim();var must=document.getElementById('pMust').value.trim();var flags=document.getElementById('pFlags').value.trim();
+  if(!name||!jd){var e=document.getElementById('pErr');e.innerHTML='<div class="alert aerror">Team name and JD are required</div>';e.style.display='block';return;}
   var presets=gp();
-  if(editId){
-    var i=presets.findIndex(function(p){return p.id===editId;});
-    if(i!==-1)presets[i]=Object.assign({},presets[i],{name:name,desc:desc,teamDesc:desc,jd:jd,mustHaves:must,redFlags:flags});
-  } else {
-    presets.push({id:Date.now().toString(),name:name,desc:desc,teamDesc:desc,jd:jd,mustHaves:must,redFlags:flags});
-  }
+  if(editId){var i=presets.findIndex(function(p){return p.id===editId;});if(i!==-1)presets[i]=Object.assign({},presets[i],{name:name,desc:desc,teamDesc:desc,jd:jd,mustHaves:must,redFlags:flags});}
+  else{presets.push({id:Date.now().toString(),name:name,desc:desc,teamDesc:desc,jd:jd,mustHaves:must,redFlags:flags});}
   sp(presets);closePreset();renderPList();renderGrid();
 }
-
-function delPreset(){
-  if(!editId||!confirm('Delete this preset?'))return;
-  var presets=gp().filter(function(p){return p.id!==editId;});
-  sp(presets);
-  if(selPreset===editId){selPreset=null;document.getElementById('jdWrap').style.display='none';}
-  closePreset();renderPList();renderGrid();
-}
+function delPreset(){if(!editId||!confirm('Delete this preset?'))return;var presets=gp().filter(function(p){return p.id!==editId;});sp(presets);if(selPreset===editId){selPreset=null;document.getElementById('jdWrap').style.display='none';}closePreset();renderPList();renderGrid();}
 
 function switchTab(tab){
   activeTab=tab;
@@ -391,17 +316,10 @@ function switchTab(tab){
   document.getElementById('tabLink').classList.toggle('active',tab==='link');
   document.getElementById('panelSearch').style.display=tab==='search'?'block':'none';
   document.getElementById('panelLink').style.display=tab==='link'?'block':'none';
-  selCandidate=null;
-  document.getElementById('selBox').style.display='none';
-  document.getElementById('searchResults').style.display='none';
+  selCandidate=null;document.getElementById('selBox').style.display='none';document.getElementById('searchResults').style.display='none';
 }
 
-function onType(){
-  clearTimeout(searchTimer);
-  var v=document.getElementById('searchInput').value.trim();
-  if(v.length<2){document.getElementById('searchResults').style.display='none';return;}
-  searchTimer=setTimeout(doSearch,800);
-}
+function onType(){clearTimeout(searchTimer);var v=document.getElementById('searchInput').value.trim();if(v.length<2){document.getElementById('searchResults').style.display='none';return;}searchTimer=setTimeout(doSearch,800);}
 
 async function doSearch(){
   var query=document.getElementById('searchInput').value.trim();
@@ -413,48 +331,34 @@ async function doSearch(){
   showMsg('<span class="mspinner"></span>Searching Ashby…');
   try{
     var q=query.toLowerCase().trim();
-    var found=[];
-    var cursor=null;
-    var pages=0;
+    var found=[];var cursor=null;var pages=0;
     do{
       var body=cursor?{cursor:cursor}:{};
       var data=await ashbyCall('/candidate.list',body);
       var results=data.results||[];
       for(var i=0;i<results.length;i++){
         var c=results[i];
-        if((c.name||'').toLowerCase().indexOf(q)!==-1){
-          found.push(c);
-          if(found.length>=8)break;
-        }
+        if((c.name||'').toLowerCase().indexOf(q)!==-1){found.push(c);if(found.length>=8)break;}
       }
-      cursor=data.nextCursor||null;
-      pages++;
+      cursor=data.nextCursor||null;pages++;
       if(found.length>=8||pages>=10)break;
     }while(cursor);
     searchData=found;
     if(!searchData.length){showMsg('No candidates found for "'+query+'"');btn.disabled=false;btn.textContent='Search';return;}
-    renderSR();
+    renderResults();
   }catch(err){showMsg('Error: '+err.message);}
   btn.disabled=false;btn.textContent='Search';
 }
 
-function showMsg(html){
-  var b=document.getElementById('searchResults');
-  b.innerHTML='<div class="smsg">'+html+'</div>';
-  b.style.display='block';
-}
+function showMsg(html){var b=document.getElementById('searchResults');b.innerHTML='<div class="smsg">'+html+'</div>';b.style.display='block';}
 
-function renderSR(){
+function renderResults(){
   var b=document.getElementById('searchResults');
   b.innerHTML=searchData.map(function(c){
-    var ini=inits(c.name||'?');
-    var pos=(c.position||'');
-    var comp=(c.company||'');
+    var ini=initials(c.name||'?');
+    var pos=c.position||'';var comp=c.company||'';
     var d=JSON.stringify({candId:c.id,name:c.name||'Unknown',pos:pos,company:comp});
-    return '<div class="sri" onclick=\'pick('+d.replace(/'/g,'&#39;')+')\' >'
-      +'<div class="av">'+ini+'</div>'
-      +'<div><div class="rname">'+(c.name||'Unknown')+'</div>'
-      +'<div class="rmeta">'+pos+(comp?' · '+comp:'')+'</div></div></div>';
+    return'<div class="sri" onclick=\'pick('+d.replace(/'/g,"&#39;")+')\' >'+'<div class="av">'+ini+'</div><div><div class="rname">'+(c.name||'Unknown')+'</div><div class="rmeta">'+(pos)+(comp?' · '+comp:'')+'</div></div></div>';
   }).join('');
   b.style.display='block';
 }
@@ -465,90 +369,82 @@ function pick(c){
   document.getElementById('searchResults').style.display='none';
   document.getElementById('searchInput').value='';
   var b=document.getElementById('selBox');
-  b.innerHTML='<div class="selbox">'
-    +'<div class="av" style="width:40px;height:40px;font-size:15px">'+inits(c.name)+'</div>'
-    +'<div class="selbox-info"><div class="selbox-name">'+c.name+'</div>'
-    +'<div class="selbox-meta">Will find their most recent application automatically</div></div>'
-    +'<button class="clearbtn" onclick="clearSel()">✕</button></div>';
+  b.innerHTML='<div class="selbox"><div class="av" style="width:40px;height:40px;font-size:15px">'+initials(c.name||'?')+'</div><div class="selbox-info"><div class="selbox-name">'+c.name+'</div><div class="selbox-meta">Candidate selected</div></div><button class="clearbtn" onclick="clearSel()">✕</button></div>';
   b.style.display='block';
 }
-
 function clearSel(){selCandidate=null;document.getElementById('selBox').style.display='none';}
-function inits(n){return(n||'?').split(' ').filter(Boolean).slice(0,2).map(function(w){return w[0].toUpperCase();}).join('');}
+function initials(n){return n.split(' ').filter(Boolean).slice(0,2).map(function(w){return w[0].toUpperCase();}).join('');}
 
 async function ashbyCall(endpoint,body){
   var k=gk();
-  var res=await fetch(PROXY,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({endpoint:endpoint,body:body||{},ashbyKey:k.ashby})
-  });
+  var res=await fetch(PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:endpoint,body:body||{},ashbyKey:k.ashby})});
   if(!res.ok){var t=await res.text();throw new Error('Proxy error '+res.status+': '+t.substring(0,150));}
   var data=await res.json();
-  if(data.errors&&data.errors.length){
-    var e=data.errors[0];
-    throw new Error('Ashby: '+(typeof e==='string'?e:(e.message||e.code||JSON.stringify(e))));
-  }
+  if(data.errors&&data.errors.length){var e=data.errors[0];throw new Error('Ashby: '+(typeof e==='string'?e:(e.message||e.code||JSON.stringify(e))));}
   return data;
 }
 
-function parseLink(s){
-  s=(s||'').trim();
+function extractCandidateId(url){
+  url=url.trim();
   var m;
-  m=s.match(/applications\/([a-f0-9-]{36})/i);if(m)return{type:'application',id:m[1]};
-  m=s.match(/candidates\/([a-f0-9-]{36})/i);if(m)return{type:'candidate',id:m[1]};
-  m=s.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i);if(m)return{type:'candidate',id:m[1]};
+  m=url.match(/candidates\/([a-f0-9-]{36})/i);if(m)return m[1];
+  m=url.match(/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i);if(m)return m[1];
   return null;
 }
 
 async function fetchData(){
-  var appId=null,candId=null;
+  var candId=null;
+  var app=null;
+  var allApps=[];
 
   if(activeTab==='search'){
     if(!selCandidate)throw new Error('No candidate selected');
     candId=selCandidate.candId;
-    if(!candId)throw new Error('Candidate ID missing — please search again and reselect');
+    if(!candId)throw new Error('Candidate ID missing — please search again');
     setStep('Finding applications for '+selCandidate.name+'…');
-    var al=await ashbyCall('/application.list',{candidateId:candId});
-    var apps=al.results||[];
-    if(!apps.length)throw new Error('No applications found for '+selCandidate.name+' — they may not have applied to any roles yet');
-    appId=apps[0].id;
-    if(!appId)throw new Error('Application found but ID is missing — please try using the link tab instead');
-    candId=(apps[0].candidate&&apps[0].candidate.id)||candId;
+    var r=await ashbyCall('/application.list',{candidateId:candId});
+    allApps=r.results||[];
+    if(!allApps.length)throw new Error('No applications found for '+selCandidate.name+' in Ashby');
+    // prefer active applications, fall back to most recent
+    var active=allApps.filter(function(a){return a.status==='Active';});
+    app=active.length?active[0]:allApps[0];
   } else {
     var lv=document.getElementById('linkInput').value.trim();
     if(!lv)throw new Error('Please paste an Ashby link');
-    var parsed=parseLink(lv);
-    if(!parsed)throw new Error('Could not find a valid ID in that link — paste the full URL from your browser address bar in Ashby');
-    if(parsed.type==='application'){
-      appId=parsed.id;
-    } else {
-      candId=parsed.id;
-      setStep('Finding applications…');
-      var al2=await ashbyCall('/application.list',{candidateId:candId});
-      var apps2=al2.results||[];
-      if(!apps2.length)throw new Error('No applications found for this candidate');
-      appId=apps2[0].id;
-      candId=(apps2[0].candidate&&apps2[0].candidate.id)||candId;
-    }
+    candId=extractCandidateId(lv);
+    if(!candId)throw new Error('Could not find a candidate ID in that link. Make sure you copy the full URL from Ashby.');
+    setStep('Finding applications…');
+    var r2=await ashbyCall('/application.list',{candidateId:candId});
+    allApps=r2.results||[];
+    if(!allApps.length)throw new Error('No applications found for this candidate');
+    var active2=allApps.filter(function(a){return a.status==='Active';});
+    app=active2.length?active2[0]:allApps[0];
   }
 
-  setStep('Fetching application details…');
-  var ar=await ashbyCall('/application.info',{id:appId});
-  var app=ar.results;
-  if(!app)throw new Error('Application not found — the ID may be invalid');
-
-  var jobId=app.job&&app.job.id;
+  var appId=app.id;
   candId=candId||(app.candidate&&app.candidate.id);
+  var jobId=app.job&&app.job.id;
 
-  setStep('Fetching candidate profile, job and interview notes…');
-  var par=await Promise.all([
+  setStep('Fetching candidate profile and interview notes…');
+
+  // Build what we know from the application list response directly
+  var appData={
+    id:appId,
+    status:app.status,
+    currentInterviewStage:app.currentInterviewStage||{},
+    source:app.source||{},
+    job:app.job||{},
+    formSubmissions:app.formSubmissions||[],
+    candidate:app.candidate||{}
+  };
+
+  var parallel=await Promise.all([
     candId?ashbyCall('/candidate.info',{id:candId}):Promise.resolve({results:{}}),
     jobId?ashbyCall('/job.info',{id:jobId}):Promise.resolve({results:{}}),
     ashbyCall('/applicationFeedback.list',{applicationId:appId})
   ]);
 
-  return{app:app,candidate:par[0].results||{},job:par[1].results||{},feedbacks:par[2].results||[]};
+  return{app:appData,candidate:parallel[0].results||{},job:parallel[1].results||{},feedbacks:parallel[2].results||[]};
 }
 
 function exProfile(c,app){
@@ -559,17 +455,16 @@ function exProfile(c,app){
   if(c.currentCompany)lines.push('Current company: '+c.currentCompany);
   if(c.position)lines.push('Position: '+c.position);
   if(c.company)lines.push('Company: '+c.company);
-  if(app.source&&app.source.label)lines.push('Source: '+app.source.label);
-  if(app.currentInterviewStage&&app.currentInterviewStage.title)lines.push('Stage: '+app.currentInterviewStage.title);
+  if(app.source&&app.source.title)lines.push('Source: '+app.source.title);
+  if(app.currentInterviewStage&&app.currentInterviewStage.title)lines.push('Pipeline stage: '+app.currentInterviewStage.title);
+  if(app.status)lines.push('Application status: '+app.status);
   if(c.resumeText)lines.push('\n--- CV ---\n'+c.resumeText.substring(0,6000));
   return lines.join('\n')||'Limited profile data in Ashby';
 }
 
 function exAnswers(app){
   var parts=[];
-  (app.formSubmissions||[]).forEach(function(sub){
-    (sub.answers||[]).forEach(function(a){if(a.value)parts.push('Q: '+(a.label||'Field')+'\nA: '+a.value);});
-  });
+  (app.formSubmissions||[]).forEach(function(sub){(sub.answers||[]).forEach(function(a){if(a.value)parts.push('Q: '+(a.label||'Field')+'\nA: '+a.value);});});
   return parts.join('\n\n')||'No application answers on record';
 }
 
@@ -587,24 +482,8 @@ function exFeedback(fbs){
 
 async function callAI(prompt){
   var k=gk();
-  var res=await fetch('https://api.openai.com/v1/chat/completions',{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+k.openai,'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'gpt-4o',
-      response_format:{type:'json_object'},
-      temperature:0.2,
-      messages:[
-        {role:'system',content:'You are an expert hiring advisor. Respond with valid JSON only.'},
-        {role:'user',content:prompt}
-      ]
-    })
-  });
-  if(!res.ok){
-    if(res.status===401)throw new Error('Invalid OpenAI API key — check Settings');
-    if(res.status===429)throw new Error('OpenAI rate limit — wait a moment and try again');
-    throw new Error('OpenAI error '+res.status);
-  }
+  var res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+k.openai,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4o',response_format:{type:'json_object'},temperature:0.2,messages:[{role:'system',content:'You are an expert hiring advisor. Respond with valid JSON only.'},{role:'user',content:prompt}]})});
+  if(!res.ok){if(res.status===401)throw new Error('Invalid OpenAI API key — check Settings');if(res.status===429)throw new Error('OpenAI rate limit — wait a moment and try again');throw new Error('OpenAI error '+res.status);}
   var d=await res.json();
   return JSON.parse(d.choices[0].message.content);
 }
@@ -619,49 +498,25 @@ function buildPrompt(preset,jdText,jdLabel,profile,answers,feedback,extra){
     +'APPLICATION ANSWERS:\n'+answers+'\n\n'
     +'INTERVIEW NOTES:\n'+feedback+'\n\n'
     +(extra?'ADDITIONAL CONTEXT:\n'+extra+'\n\n':'')
-    +'Return JSON:\n{\n'
-    +'"verdict":"hire" or "no_hire" or "maybe",\n'
-    +'"confidence":"high" or "medium" or "low",\n'
-    +'"overall_score":integer 1-10,\n'
-    +'"scores":{"jd_fit":integer,"cv_strength":integer,"interview_signals":integer,"team_fit":integer},\n'
-    +'"one_liner":"punchy single sentence",\n'
-    +'"reasoning":"4-6 sentences with specific evidence",\n'
-    +'"hire_signals":["signal","signal"],\n'
-    +'"concerns":["concern","concern"],\n'
-    +'"must_have_check":"go through each must-have",\n'
-    +'"next_step":"specific recommended action",\n'
-    +'"data_gaps":"what is missing or None"\n'
-    +'}\n\n'
-    +'Rules: interview_signals=5 if no notes. confidence=low if no interview notes. Name specific companies and technologies. Do not invent information.';
+    +'Return JSON:\n{\n"verdict":"hire" or "no_hire" or "maybe",\n"confidence":"high" or "medium" or "low",\n"overall_score":integer 1-10,\n"scores":{"jd_fit":integer,"cv_strength":integer,"interview_signals":integer,"team_fit":integer},\n"one_liner":"punchy single sentence",\n"reasoning":"4-6 sentences with specific evidence",\n"hire_signals":["signal","signal"],\n"concerns":["concern","concern"],\n"must_have_check":"go through each must-have",\n"next_step":"specific recommended action",\n"data_gaps":"what is missing or None"\n}\nRules: interview_signals=5 if no notes. confidence=low if no interview notes. Name specific companies and technologies. Do not invent information.';
 }
 
 async function runReview(){
-  var k=gk();
-  var extra=document.getElementById('extraCtx').value.trim();
-  var errors=[];
+  var k=gk();var extra=document.getElementById('extraCtx').value.trim();var errors=[];
   if(!k.ashby)errors.push('Ashby API key not set — open Settings ⚙️');
   if(!k.openai)errors.push('OpenAI API key not set — open Settings ⚙️');
   if(!selPreset)errors.push('Please select a team in Step 1');
   if(activeTab==='search'&&!selCandidate)errors.push('Please search and select a candidate in Step 2');
   if(activeTab==='link'&&!document.getElementById('linkInput').value.trim())errors.push('Please paste an Ashby link in Step 2');
-
   var eb=document.getElementById('errBox');
-  if(errors.length){
-    eb.innerHTML='<div class="alert aerror">'+errors.join('<br>')+'</div>';
-    eb.style.display='block';
-    eb.scrollIntoView({behavior:'smooth'});
-    return;
-  }
+  if(errors.length){eb.innerHTML='<div class="alert aerror">'+errors.join('<br>')+'</div>';eb.style.display='block';eb.scrollIntoView({behavior:'smooth'});return;}
   eb.style.display='none';
-
   var preset=gp().find(function(p){return p.id===selPreset;});
   if(!preset)return;
-
   document.getElementById('runBtn').disabled=true;
   document.getElementById('loadCard').style.display='block';
   document.getElementById('resultsArea').innerHTML='';
   document.getElementById('loadCard').scrollIntoView({behavior:'smooth'});
-
   try{
     setStep('Connecting to Ashby…');
     var d=await fetchData();
@@ -674,10 +529,7 @@ async function runReview(){
     var html='';
     if(selJD==='both'){
       setStep('Analysing against both JDs…');
-      var both=await Promise.all([
-        callAI(buildPrompt(preset,preset.jd,preset.name+' Team JD',profile,answers,feedback,extra)),
-        callAI(buildPrompt(preset,AI_JD,'Generic Applied AI Engineer JD',profile,answers,feedback,extra))
-      ]);
+      var both=await Promise.all([callAI(buildPrompt(preset,preset.jd,preset.name+' Team JD',profile,answers,feedback,extra)),callAI(buildPrompt(preset,AI_JD,'Generic Applied AI Engineer JD',profile,answers,feedback,extra))]);
       html=renderResult(both[0],cname,rname,preset.name+' Team JD')+renderResult(both[1],cname,rname,'Generic Applied AI Engineer JD');
     } else {
       var jdText=selJD==='ai'?AI_JD:preset.jd;
@@ -704,50 +556,20 @@ function renderResult(r,cname,rname,jdLabel){
   var v=r.verdict||'maybe';
   var vl=v==='hire'?'✅ Hire':v==='no_hire'?'❌ No hire':'🤔 Needs discussion';
   var vc=v==='hire'?'vhire':v==='no_hire'?'vnohire':'vmaybe';
-  var s=r.scores||{};
-  var os=r.overall_score||0;
+  var s=r.scores||{};var os=r.overall_score||0;
   var sigs=(r.hire_signals||[]).map(function(x){return'<li><span>✅</span><span>'+x+'</span></li>';}).join('')||'<li><span>—</span><span>None identified</span></li>';
   var cons=(r.concerns||[]).map(function(x){return'<li><span>⚠️</span><span>'+x+'</span></li>';}).join('')||'<li><span>—</span><span>None identified</span></li>';
   var keys=['jd_fit','cv_strength','interview_signals','team_fit'];
   var labels=['JD Fit','CV Strength','Interview','Team Fit'];
-  var boxes=keys.map(function(k,i){
-    var v2=s[k]||0;
-    return'<div class="scbox"><div class="sclabel">'+labels[i]+'</div>'
-      +'<div class="scval '+sc(v2)+'">'+v2+'</div>'
-      +'<div class="scbar"><div class="scfill '+fc(v2)+'" style="width:'+v2*10+'%"></div></div></div>';
-  }).join('');
-  return'<div class="rcard">'
-    +'<div class="rheader"><div><h3>'+cname+'</h3>'
-    +'<div class="rsubtitle">'+rname+' · <strong>'+jdLabel+'</strong> · Confidence: '+(r.confidence||'medium')+'</div>'
-    +(r.one_liner?'<div style="margin-top:8px;font-size:14px;color:#3a3a3c;font-style:italic">"'+r.one_liner+'"</div>':'')
-    +'</div><div class="verdict '+vc+'">'+vl+'</div></div>'
-    +'<div class="scrow">'+boxes+'</div>'
-    +'<div class="rbody">'
-    +'<div class="rsec"><div class="slabel">Overall score</div>'
-    +'<div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px">'
-    +'<span class="bigscore '+sc(os)+'">'+os+'</span><span class="denom">/10</span></div></div>'
-    +'<div class="rsec"><div class="slabel">Reasoning</div><p>'+(r.reasoning||'No reasoning provided')+'</p></div>'
-    +'<div class="rsec"><div class="sgrid">'
-    +'<div><div class="sheading" style="color:#1a7f37">Hire signals</div><ul class="slist">'+sigs+'</ul></div>'
-    +'<div><div class="sheading" style="color:#d70015">Concerns</div><ul class="slist">'+cons+'</ul></div>'
-    +'</div></div>'
-    +(r.must_have_check?'<div class="rsec"><div class="slabel">Must-have check</div><p>'+r.must_have_check+'</p></div>':'')
-    +'<div class="rsec"><div class="slabel">Recommended next step</div><p style="font-weight:600">'+(r.next_step||'—')+'</p></div>'
-    +(r.data_gaps&&r.data_gaps.toLowerCase()!=='none'?'<div class="rsec"><div class="alert awarn" style="margin:0"><strong>Data gaps:</strong> '+r.data_gaps+'</div></div>':'')
-    +'</div></div>';
+  var boxes=keys.map(function(k,i){var v2=s[k]||0;return'<div class="scbox"><div class="sclabel">'+labels[i]+'</div><div class="scval '+sc(v2)+'">'+v2+'</div><div class="scbar"><div class="scfill '+fc(v2)+'" style="width:'+v2*10+'%"></div></div></div>';}).join('');
+  return'<div class="rcard"><div class="rheader"><div><h3>'+cname+'</h3><div class="rsubtitle">'+rname+' · <strong>'+jdLabel+'</strong> · Confidence: '+(r.confidence||'medium')+'</div>'+(r.one_liner?'<div style="margin-top:8px;font-size:14px;color:#3a3a3c;font-style:italic">"'+r.one_liner+'"</div>':'')+'</div><div class="verdict '+vc+'">'+vl+'</div></div><div class="scrow">'+boxes+'</div><div class="rbody"><div class="rsec"><div class="slabel">Overall score</div><div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px"><span class="bigscore '+sc(os)+'">'+os+'</span><span class="denom">/10</span></div></div><div class="rsec"><div class="slabel">Reasoning</div><p>'+(r.reasoning||'No reasoning provided')+'</p></div><div class="rsec"><div class="sgrid"><div><div class="sheading" style="color:#1a7f37">Hire signals</div><ul class="slist">'+sigs+'</ul></div><div><div class="sheading" style="color:#d70015">Concerns</div><ul class="slist">'+cons+'</ul></div></div></div>'+(r.must_have_check?'<div class="rsec"><div class="slabel">Must-have check</div><p>'+r.must_have_check+'</p></div>':'')+'<div class="rsec"><div class="slabel">Recommended next step</div><p style="font-weight:600">'+(r.next_step||'—')+'</p></div>'+(r.data_gaps&&r.data_gaps.toLowerCase()!=='none'?'<div class="rsec"><div class="alert awarn" style="margin:0"><strong>Data gaps:</strong> '+r.data_gaps+'</div></div>':'')+'</div></div>';
 }
 
 function init(){
   renderGrid();
   var k=gk();
-  if(!k.ashby||!k.openai){
-    document.getElementById('errBox').innerHTML='<div class="alert ainfo">👋 Welcome! Open <strong>Settings ⚙️</strong> top right to add your API keys.</div>';
-    document.getElementById('errBox').style.display='block';
-  }
-  document.addEventListener('click',function(e){
-    var w=document.getElementById('searchWrap');
-    if(w&&!w.contains(e.target)){document.getElementById('searchResults').style.display='none';}
-  });
+  if(!k.ashby||!k.openai){document.getElementById('errBox').innerHTML='<div class="alert ainfo">👋 Welcome! Open <strong>Settings ⚙️</strong> top right to add your Ashby and OpenAI API keys.</div>';document.getElementById('errBox').style.display='block';}
+  document.addEventListener('click',function(e){var w=document.getElementById('searchWrap');if(w&&!w.contains(e.target)){document.getElementById('searchResults').style.display='none';}});
 }
 
 init();
