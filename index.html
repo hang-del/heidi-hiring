@@ -122,7 +122,7 @@ textarea{resize:vertical;line-height:1.5}
     <h2><span class="stepn">2</span>Paste candidate link</h2>
     <label>Ashby candidate URL</label>
     <input type="text" id="linkInput" placeholder="https://app.ashbyhq.com/candidates/..." />
-    <div class="hint">Open the candidate in Ashby and copy the URL from your browser address bar. The application ID will be stripped out automatically.</div>
+    <div class="hint">Open the candidate in Ashby and copy the URL from your browser address bar.</div>
   </div>
 
   <div class="card">
@@ -340,13 +340,10 @@ function delPreset(){
   closePreset();renderPList();renderGrid();
 }
 
-// Extract only the candidate UUID from any Ashby URL
 function extractCandidateId(input){
   input=input.trim();
-  // Look for candidates/UUID pattern specifically
   var m=input.match(/candidates\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i);
   if(m)return m[1];
-  // Fallback: bare UUID
   var m2=input.match(/^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i);
   if(m2)return m2[1];
   return null;
@@ -375,7 +372,8 @@ async function fetchData(){
   var candId=extractCandidateId(lv);
   if(!candId)throw new Error('Could not find a candidate ID in that link. Make sure you are copying the URL from the candidate page in Ashby.');
 
-  setStep('Finding applications for candidate…');
+  // Step 1: get list of applications for this candidate
+  setStep('Finding applications…');
   var appList=await ashbyCall('/application.list',{candidateId:candId});
   var apps=appList.results||[];
   if(!apps.length)throw new Error('No applications found for this candidate in Ashby');
@@ -383,21 +381,28 @@ async function fetchData(){
   // Prefer active applications, fall back to most recent
   var activeApps=apps.filter(function(a){return a.status==='Active';});
   var chosenApp=activeApps.length?activeApps[0]:apps[0];
+
+  // Build app object directly from list data — no application.info call needed
   var appId=chosenApp.id;
+  var appData={
+    id:appId,
+    status:chosenApp.status||'',
+    candidate:chosenApp.candidate||{},
+    job:chosenApp.job||{},
+    source:chosenApp.source||{},
+    currentInterviewStage:chosenApp.currentInterviewStage||{},
+    hiringTeam:chosenApp.hiringTeam||[],
+    formSubmissions:[],
+    customFields:[]
+  };
+
+  var candIdResolved=(chosenApp.candidate&&chosenApp.candidate.id)||candId;
   var jobId=chosenApp.job&&chosenApp.job.id;
-  var candIdFromApp=(chosenApp.candidate&&chosenApp.candidate.id)||candId;
 
-  setStep('Fetching application details…');
-  var ar=await ashbyCall('/application.info',{id:appId});
-  var appData=ar.results;
-  if(!appData)throw new Error('Application not found');
-
-  jobId=jobId||(appData.job&&appData.job.id);
-  candIdFromApp=candIdFromApp||(appData.candidate&&appData.candidate.id);
-
+  // Step 2: fetch candidate profile, job details, and feedback in parallel
   setStep('Fetching candidate profile, job details and interview notes…');
   var parallel=await Promise.all([
-    candIdFromApp?ashbyCall('/candidate.info',{id:candIdFromApp}):Promise.resolve({results:{}}),
+    ashbyCall('/candidate.info',{id:candIdResolved}),
     jobId?ashbyCall('/job.info',{id:jobId}):Promise.resolve({results:{}}),
     ashbyCall('/applicationFeedback.list',{applicationId:appId})
   ]);
@@ -523,7 +528,7 @@ async function runReview(){
   try{
     setStep('Connecting to Ashby…');
     var d=await fetchData();
-    var cname=(d.candidate&&d.candidate.name)||'Candidate';
+    var cname=(d.candidate&&d.candidate.name)||(d.app&&d.app.candidate&&d.app.candidate.name)||'Candidate';
     var rname=(d.job&&d.job.title)||(d.app&&d.app.job&&d.app.job.title)||preset.name;
     var profile=exProfile(d.candidate,d.app);
     var answers=exAnswers(d.app);
